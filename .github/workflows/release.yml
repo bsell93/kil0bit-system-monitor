@@ -3,9 +3,15 @@ name: Release
 on:
   push:
     branches: [ main ]
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to release (e.g. 1.0.0)'
+        required: true
 
 jobs:
   check-bump:
+    if: github.event_name == 'push'
     runs-on: ubuntu-latest
     outputs:
       is_bump: ${{ steps.detect.outputs.is_bump }}
@@ -28,13 +34,27 @@ jobs:
           fi
 
   release:
-    needs: check-bump
-    if: needs.check-bump.outputs.is_bump == 'true'
+    needs: [ check-bump ]
+    if: |
+      always() && (
+        (github.event_name == 'push' && needs.check-bump.outputs.is_bump == 'true') ||
+        github.event_name == 'workflow_dispatch'
+      )
     permissions:
       contents: write
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
+
+      - name: Set version (manual trigger)
+        if: github.event_name == 'workflow_dispatch'
+        shell: bash
+        run: echo "RELEASE_VERSION=${{ github.event.inputs.version }}" >> $GITHUB_ENV
+
+      - name: Set version (auto trigger)
+        if: github.event_name == 'push'
+        shell: bash
+        run: echo "RELEASE_VERSION=${{ needs.check-bump.outputs.version }}" >> $GITHUB_ENV
 
       - name: Install Rust (stable)
         uses: dtolnay/rust-toolchain@stable
@@ -56,20 +76,20 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git tag "v${{ needs.check-bump.outputs.version }}"
-          git push origin "v${{ needs.check-bump.outputs.version }}"
+          git tag "v${{ env.RELEASE_VERSION }}" || true
+          git push origin "v${{ env.RELEASE_VERSION }}" || true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Create GitHub Release
+      - name: Create GitHub Release (Draft)
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: v${{ needs.check-bump.outputs.version }}
-          name: kil0bit System Monitor v${{ needs.check-bump.outputs.version }}
+          tag_name: v${{ env.RELEASE_VERSION }}
+          name: kil0bit System Monitor v${{ env.RELEASE_VERSION }}
           draft: true
           prerelease: false
           body: |
-            ## kil0bit System Monitor v${{ needs.check-bump.outputs.version }}
+            ## kil0bit System Monitor v${{ env.RELEASE_VERSION }}
 
             A low-latency hardware telemetry overlay for the Windows taskbar.
 
