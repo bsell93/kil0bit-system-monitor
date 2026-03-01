@@ -150,8 +150,8 @@ fn main() -> Result<(), slint::PlatformError> {
                 if let Ok(rwh) = slint_handle.window_handle() {
                     if let raw_window_handle::RawWindowHandle::Win32(win32) = rwh.as_raw() {
                         let hwnd = win32.hwnd.get() as *mut std::ffi::c_void;
-                        let new_x = current_pos.x + (offset_x as f32 * scale) as i32;
-                        let new_y = current_pos.y + (offset_y as f32 * scale) as i32;
+                        let new_x = current_pos.x + (offset_x * scale) as i32;
+                        let new_y = current_pos.y + (offset_y * scale) as i32;
                         windowing::move_window(hwnd, new_x, new_y);
                         // Update the hole to follow the drag
                         windowing::punch_hole_in_taskbar(hwnd);
@@ -448,7 +448,7 @@ fn main() -> Result<(), slint::PlatformError> {
         let overlay_handle = overlay_handle.clone();
         move |font_name| {
             if let Some(overlay) = overlay_handle.upgrade() {
-                overlay.set_font_family(font_name.clone().into());
+                overlay.set_font_family(font_name.clone());
                 let mut c = cfg_font.lock().unwrap();
                 c.font_family = font_name.into();
                 c.save();
@@ -461,7 +461,7 @@ fn main() -> Result<(), slint::PlatformError> {
         let overlay_handle = overlay_handle.clone();
         move |color| {
             if let Some(overlay) = overlay_handle.upgrade() {
-                overlay.set_text_color(color.clone());
+                overlay.set_text_color(color);
                 let hex_code = format!("#{:02X}{:02X}{:02X}", color.red(), color.green(), color.blue());
                 let mut c = cfg_tc.lock().unwrap();
                 c.text_color_hex = hex_code;
@@ -475,7 +475,7 @@ fn main() -> Result<(), slint::PlatformError> {
         let overlay_handle = overlay_handle.clone();
         move |color| {
             if let Some(overlay) = overlay_handle.upgrade() {
-                overlay.set_bg_color(color.clone());
+                overlay.set_bg_color(color);
                 let hex_code = format!("#{:02X}{:02X}{:02X}", color.red(), color.green(), color.blue());
                 let mut c = cfg_bg_color.lock().unwrap();
                 c.bg_color_hex = hex_code;
@@ -530,7 +530,7 @@ fn main() -> Result<(), slint::PlatformError> {
 
     app_ui.on_open_url(|url| {
         let _ = std::process::Command::new("cmd")
-            .args(&["/C", "start", "", url.as_str()])
+            .args(["/C", "start", "", url.as_str()])
             .spawn();
     });
 
@@ -597,11 +597,9 @@ fn main() -> Result<(), slint::PlatformError> {
                 lock_item_tray.set_checked(current_lock);
             }
         }
-        if let Ok(event) = tray_icon::TrayIconEvent::receiver().try_recv() {
-            if let tray_icon::TrayIconEvent::Click { button: tray_icon::MouseButton::Left, button_state: tray_icon::MouseButtonState::Up, .. } = event {
-                if let Some(app) = app_tray_handle.upgrade() {
-                    let _ = app.show();
-                }
+        if let Ok(tray_icon::TrayIconEvent::Click { button: tray_icon::MouseButton::Left, button_state: tray_icon::MouseButtonState::Up, .. }) = tray_icon::TrayIconEvent::receiver().try_recv() {
+            if let Some(app) = app_tray_handle.upgrade() {
+                let _ = app.show();
             }
         }
     });
