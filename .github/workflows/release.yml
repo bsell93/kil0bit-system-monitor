@@ -2,11 +2,34 @@ name: Release
 
 on:
   push:
-    tags:
-      - 'v*.*.*'
+    branches: [ main ]
 
 jobs:
+  check-bump:
+    runs-on: ubuntu-latest
+    outputs:
+      is_bump: ${{ steps.detect.outputs.is_bump }}
+      version: ${{ steps.detect.outputs.version }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Detect version bump commit
+        id: detect
+        shell: bash
+        run: |
+          MSG=$(git log -1 --pretty=%s)
+          echo "Commit message: $MSG"
+          if [[ "$MSG" == chore:\ bump\ version* ]]; then
+            VERSION=$(grep '^version' Cargo.toml | head -1 | sed 's/version = "\(.*\)"/\1/')
+            echo "is_bump=true" >> $GITHUB_OUTPUT
+            echo "version=$VERSION" >> $GITHUB_OUTPUT
+          else
+            echo "is_bump=false" >> $GITHUB_OUTPUT
+          fi
+
   release:
+    needs: check-bump
+    if: needs.check-bump.outputs.is_bump == 'true'
     permissions:
       contents: write
     runs-on: windows-latest
@@ -28,14 +51,25 @@ jobs:
       - name: Build MSI Installer
         run: cargo wix --no-build --nocapture
 
+      - name: Push version tag
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git tag "v${{ needs.check-bump.outputs.version }}"
+          git push origin "v${{ needs.check-bump.outputs.version }}"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          name: kil0bit System Monitor ${{ github.ref_name }}
+          tag_name: v${{ needs.check-bump.outputs.version }}
+          name: kil0bit System Monitor v${{ needs.check-bump.outputs.version }}
           draft: false
           prerelease: false
           body: |
-            ## kil0bit System Monitor ${{ github.ref_name }}
+            ## kil0bit System Monitor v${{ needs.check-bump.outputs.version }}
 
             A low-latency hardware telemetry overlay for the Windows taskbar.
 
