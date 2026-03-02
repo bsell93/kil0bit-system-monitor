@@ -18,6 +18,8 @@ jobs:
       version: ${{ steps.detect.outputs.version }}
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Detect version bump
         id: detect
@@ -51,6 +53,8 @@ jobs:
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Set version (manual trigger)
         if: github.event_name == 'workflow_dispatch'
