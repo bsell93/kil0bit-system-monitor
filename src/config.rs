@@ -20,6 +20,9 @@ pub struct AppConfig {
     pub bg_color_hex: String,   // background color e.g. "#000000"
     pub bg_opacity: f32,        // 0.0 (transparent) to 1.0 (opaque)
     pub auto_start: bool,
+    pub show_overlay: bool,
+    pub overlay_x: i32,
+    pub overlay_y: i32,
 }
 
 impl Default for AppConfig {
@@ -40,6 +43,9 @@ impl Default for AppConfig {
             bg_color_hex: "#000000".to_string(),
             bg_opacity: 0.55,
             auto_start: false,
+            show_overlay: true,
+            overlay_x: 0,
+            overlay_y: 0,
         }
     }
 }
