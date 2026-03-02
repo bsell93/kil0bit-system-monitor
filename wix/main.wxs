@@ -36,11 +36,17 @@
               Id='kil0bitEXE'
               Name='kil0bit-system-monitor.exe'
               DiskId='1'
-              Source='target\release\kil0bit-system-monitor.exe'
+              Source='target\release\kil0bit-system-monitor.exe'/>
+            
+            <RemoveFile Id='PurgeAppFolder' Name='*.' On='uninstall'/>
+            
+            <RegistryValue
+              Root='HKCU'
+              Key='Software\kil0bit\SystemMonitor'
+              Name='installed_exe'
+              Type='integer'
+              Value='1'
               KeyPath='yes'/>
-
-            <!-- Auto-start registry entry (disabled by default, user enables in app) -->
-            <!-- The app manages its own auto-start via registry; no forced entry here -->
           </Component>
 
         </Directory>
