@@ -2,7 +2,7 @@
 
 All notable changes to this project will be documented in this file.
 
-## [1.3.0] - Upcoming
+## [1.3.0] - 2026-03-02
 
 ### 🏗️ Architecture & Core
 - **Thread-Safety Refactor**: Separated state into `AppState` (UI-thread-only) and `SharedConfig` (`Arc<Mutex<AppConfig>>`). Resolves potential crashes and ensures safe sharing between background telemetry and the UI.
