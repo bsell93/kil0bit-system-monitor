@@ -38,7 +38,8 @@
               DiskId='1'
               Source='target\release\kil0bit-system-monitor.exe'/>
             
-            <RemoveFile Id='PurgeAppFolder' Name='*.' On='uninstall'/>
+            <RemoveFile Id='PurgeAppFolder' Name='*.*' On='uninstall'/>
+            <RemoveFolder Id='RemoveAppFolder' On='uninstall'/>
             
             <RegistryValue
               Root='HKCU'
