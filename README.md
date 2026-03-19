@@ -59,10 +59,11 @@ Kil0bit System Monitor is a modern successor to legacy taskbar monitors. It’s 
 
 ### 1. Download the Artifacts
 Head over to the [**Releases**](https://github.com/kil0bit-kb/kil0bit-system-monitor/releases) page and download:
+- **`Kil0bitSystemMonitor-Setup.msi`**: Professional Installer (Recommended).
 - **`Kil0bitSystemMonitor.exe`**: A self-contained, portable executable.
 
 ### 2. Run & Enjoy
-Just double-click the EXE. The app will automatically initialize the overlay and open the Settings dashboard for your first configuration.
+If using the **MSI**, just run the installer and follow the prompts. If using the **Portable EXE**, just double-click it. The app will automatically initialize the overlay and open the Settings dashboard for your first configuration.
 
 ---
 
