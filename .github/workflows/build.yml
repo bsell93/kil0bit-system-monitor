@@ -19,16 +19,16 @@ jobs:
         dotnet-version: 10.0.x
 
     - name: Restore dependencies
-      run: dotnet restore kil0bit-system-monitor/Kil0bitSystemMonitor.csproj
+      run: dotnet restore Kil0bitSystemMonitor.csproj
 
     - name: Build
-      run: dotnet build kil0bit-system-monitor/Kil0bitSystemMonitor.csproj -c Release --no-restore
+      run: dotnet build Kil0bitSystemMonitor.csproj -c Release --no-restore
 
     - name: Upload Build Artifact
       uses: actions/upload-artifact@v4
       with:
         name: Kil0bitSystemMonitor-Windows-x64
         path: |
-          kil0bit-system-monitor/bin/Release/net10.0-windows10.0.22621.0/win-x64/Kil0bitSystemMonitor.exe
-          kil0bit-system-monitor/bin/Release/net10.0-windows10.0.22621.0/win-x64/Kil0bitSystemMonitor.dll
-          kil0bit-system-monitor/bin/Release/net10.0-windows10.0.22621.0/win-x64/Microsoft.WindowsAppRuntime.Bootstrap.dll
+          bin/Release/net10.0-windows10.0.22621.0/win-x64/Kil0bitSystemMonitor.exe
+          bin/Release/net10.0-windows10.0.22621.0/win-x64/Kil0bitSystemMonitor.dll
+          bin/Release/net10.0-windows10.0.22621.0/win-x64/Microsoft.WindowsAppRuntime.Bootstrap.dll

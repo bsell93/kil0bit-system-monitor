@@ -28,7 +28,7 @@ jobs:
       shell: pwsh
       run: |
         $version = "${{ github.event.inputs.version }}"
-        $csproj = "kil0bit-system-monitor/Kil0bitSystemMonitor.csproj"
+        $csproj = "Kil0bitSystemMonitor.csproj"
         $xml = [xml](Get-Content $csproj)
         $propertyGroup = $xml.Project.PropertyGroup[0]
         
@@ -43,11 +43,11 @@ jobs:
         Write-Host "Set version to $version in $csproj"
 
     - name: Restore dependencies
-      run: dotnet restore kil0bit-system-monitor/Kil0bitSystemMonitor.csproj
+      run: dotnet restore Kil0bitSystemMonitor.csproj
 
     - name: Publish Portable EXE
       run: |
-        dotnet publish kil0bit-system-monitor/Kil0bitSystemMonitor.csproj `
+        dotnet publish Kil0bitSystemMonitor.csproj `
           -c Release `
           -r win-x64 `
           --self-contained true `
@@ -61,8 +61,7 @@ jobs:
       run: |
         # WiX v4 uses 'wix build'
         # We need to map the 'publish' directory to what's in main.wxs
-        cd kil0bit-system-monitor
-        wix build wix/main.wxs -d "publish=../release-output" -o ../Kil0bitSystemMonitor-Setup.msi
+        wix build wix/main.wxs -d "publish=release-output" -o Kil0bitSystemMonitor-Setup.msi
 
     - name: Create GitHub Release
       uses: softprops/action-gh-release@v2
