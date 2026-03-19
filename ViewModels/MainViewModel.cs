@@ -14,7 +14,7 @@ namespace Kil0bitSystemMonitor.ViewModels
             get
             {
                 var version = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version;
-                return $"v2.0.0 (Windows 11 Native Edition)";
+                return $"v{version?.Major}.{version?.Minor}.{version?.Build} (Windows 11 Native Edition)";
             }
         }
 
