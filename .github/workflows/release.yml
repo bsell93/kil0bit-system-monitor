@@ -63,8 +63,6 @@ jobs:
           -p:DebugType=none `
           -p:DebugSymbols=false `
           -o release-light
-        # Rename for clarity in release assets
-        Rename-Item -Path "release-light/Kil0bitSystemMonitor.exe" -NewName "Kil0bitSystemMonitor-Light.exe"
 
 
     - name: Build MSI Installers
@@ -76,6 +74,8 @@ jobs:
         wix build wix/main.wxs -ext WixToolset.UI.wixext -d "publish=release-output" -o Kil0bitSystemMonitor-Setup.msi
         # Lightweight MSI
         wix build wix/main.wxs -ext WixToolset.UI.wixext -d "publish=release-light" -o Kil0bitSystemMonitor-Light-Setup.msi
+        # Rename the light EXE for release assets AFTER MSI build
+        Rename-Item -Path "release-light/Kil0bitSystemMonitor.exe" -NewName "Kil0bitSystemMonitor-Light.exe"
 
     - name: Create GitHub Release
       uses: softprops/action-gh-release@v2
