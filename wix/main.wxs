@@ -58,6 +58,6 @@
         </Feature>
 
         <ui:WixUI Id="WixUI_InstallDir" InstallDirectory="APPLICATIONFOLDER" />
-        <WixVariable Id="WixUIBannerBmp" Value="Assets/SplashScreen.png" Condition="false" />
+        <WixVariable Id="WixUILicenseRtf" Value="wix/license.rtf" />
     </Package>
 </Wix>

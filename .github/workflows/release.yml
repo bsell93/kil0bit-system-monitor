@@ -49,9 +49,9 @@ jobs:
 
     - name: Build MSI Installer
       run: |
-        # WiX v4 requires extensions to be added
-        dotnet tool install --global wix || true
-        wix extension add WixToolset.UI.wixext --global
+        # Pin to stable v5.0.2 to avoid unstable v6 auto-updates
+        dotnet tool install --global wix --version 5.0.2 || dotnet tool update --global wix --version 5.0.2
+        wix extension add WixToolset.UI.wixext/5.0.2 --global
         wix build wix/main.wxs -ext WixToolset.UI.wixext -d "publish=release-output" -o Kil0bitSystemMonitor-Setup.msi
 
     - name: Create GitHub Release
