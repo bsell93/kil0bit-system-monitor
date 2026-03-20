@@ -57,6 +57,7 @@ jobs:
         wix extension add WixToolset.UI.wixext/5.0.2 --global
         # Build Versioned MSI using the renamed EXE inside the folder
         wix build wix/main.wxs -ext WixToolset.UI.wixext `
+          -d "Version=${{ github.event.inputs.version }}" `
           -d "publish=release-output" `
           -d "EXE_NAME=Kil0bitSystemMonitor-v${{ github.event.inputs.version }}.exe" `
           -o "Kil0bitSystemMonitor-v${{ github.event.inputs.version }}-Setup.msi"
