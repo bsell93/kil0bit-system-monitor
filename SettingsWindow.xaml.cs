@@ -353,19 +353,9 @@ namespace Kil0bitSystemMonitor
                 this.Activated -= SettingsWindow_Activated;
                 this.Closed -= SettingsWindow_Closed;
 
-                // Clear Collections to break references
-                NetAdapterCombo?.Items.Clear();
-                GpuAdapterCombo?.Items.Clear();
-                DiskDriveCombo?.Items.Clear();
-                ThemeCombo?.Items.Clear();
-
-                // Clear Content to break references
-                this.Content = null;
+                // Stop references
                 _viewModel = null!;
                 _config = null!;
-
-                // Force a small GC hint if possible, though usually not needed if refs are gone
-                // GC.Collect(); 
             }
             catch { }
         }
