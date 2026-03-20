@@ -7,8 +7,11 @@ A complete guide to using, customizing, and mastering your hardware telemetry ov
 ## 🛠️ Getting Started
 
 ### 1. Installation
-- Download the latest **`Kil0bitSystemMonitor.exe`** from [GitHub Releases](https://github.com/kil0bit-kb/kil0bit-system-monitor/releases).
-- Launch the EXE. No installation is required; the app is fully portable.
+The app is available in two professional formats:
+- **`Kil0bitSystemMonitor-vX.Y.Z-Setup.msi` (Recommended)**: A professional installer that handles your Start Menu, Desktop shortcuts, and provides a clean uninstall.
+- **`Kil0bitSystemMonitor-vX.Y.Z.exe` (Portable)**: A standalone, zero-installation version for users who prefer a single, portable file.
+
+Download the latest version from [GitHub Releases](https://github.com/kil0bit-kb/kil0bit-system-monitor/releases) and launch.
 
 ---
 
