@@ -45,7 +45,6 @@ jobs:
           -p:EnableCompressionInSingleFile=true `
           -p:DebugType=none `
           -p:DebugSymbols=false `
-          -p:PublishProfile=false `
           -o release-output
         # Rename for versioned release assets
         Rename-Item -Path "release-output/Kil0bitSystemMonitor.exe" -NewName "Kil0bitSystemMonitor-v${{ github.event.inputs.version }}.exe"
