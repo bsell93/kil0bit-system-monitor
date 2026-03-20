@@ -24,6 +24,7 @@ The overlay is a slim, elegant pill that sits directly on your **Windows 11 task
 - **RAM**: Real-time memory pressure.
 - **NET**: Combined Upload and Download speeds.
 - **GPU**: Raw load from your graphics processor.
+- **DISK**: Real-time disk active time and storage capacity usage.
 
 ### 🖱️ Overlay Controls
 - **Drag & Move**: Left-click and drag the overlay to reposition it.
@@ -54,8 +55,9 @@ Open the **Settings Window** to customize your experience:
 - **Lock Position**: Lock the overlay in its current location.
 
 ### 📊 Monitoring & Sensors
-- **Sensor Selection**: Choose which metrics you want to see.
+- **Sensor Selection**: Choose which metrics you want to see (CPU, RAM, NET, GPU, DISK).
 - **Network Adapter**: If you have multiple network cards (Wi-Fi, Ethernet, VPN), pick the one you want to track.
+- **Disk Drive**: Select a specific physical drive (C:, D:, etc.) to monitor its activity and used space.
 
 ### 🎨 Appearance & Design
 - **Accent Color**: Pick a color that matches your Windows theme.

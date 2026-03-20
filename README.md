@@ -29,7 +29,7 @@ Kil0bit System Monitor is a modern successor to legacy taskbar monitors. It’s 
 - **🏠 Interactive Dashboard** — A modern WinUI 3 control center with quick-link navigation.
 - **🎨 Pixel-Perfect Design** — Glassmorphism, Mica effects, and fully customizable themes.
 - **🛡️ High-DPI Ready** — Precision rendering that looks sharp on 4K, Ultrawides, and multi-monitor setups.
-- **⚙️ Power-User Settings** — Customize sensors (CPU, GPU, Network), colors, and smart startup behavior.
+- **⚙️ Power-User Settings** — Customize sensors (CPU, GPU, Network, Disk), colors, and smart startup behavior.
 
 ---
 
