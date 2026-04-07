@@ -195,8 +195,8 @@ namespace Kil0bitSystemMonitor
                 _telemetry.MetricsUpdated += _onMetricsUpdated;
 
                 // Enforce TopMost Z-order against Win11 taskbar
-                // Slow fallback timer — primary enforcement is via WM_WINDOWPOSCHANGED in WndProc
-                _zOrderTimer = new System.Threading.Timer(EnforceZOrder, null, 0, 5000);
+                // Fast fallback timer (500ms) to ensure we pop back over the taskbar if clicked
+                _zOrderTimer = new System.Threading.Timer(EnforceZOrder, null, 0, 500);
 
                 _onConfigPropertyChanged = (s, e) =>
                 {
@@ -304,8 +304,22 @@ namespace Kil0bitSystemMonitor
             IntPtr fgWindow = GetForegroundWindow();
             if (fgWindow == IntPtr.Zero || fgWindow == _hWnd) return false;
 
-            // Never hide for the shell or desktop
-            if (fgWindow == Win32Helper.FindWindow("Shell_TrayWnd", null!)) return false;
+            System.Text.StringBuilder sb = new System.Text.StringBuilder(256);
+            Win32Helper.GetClassName(fgWindow, sb, sb.Capacity);
+            string className = sb.ToString();
+
+            // Never hide for the shell, desktop, and transparent Windows 11 hit-testing/search overlays
+            if (className == "Shell_TrayWnd" || 
+                className == "Shell_SecondaryTrayWnd" || 
+                className == "WorkerW" || 
+                className == "Progman" || 
+                className == "Windows.UI.Core.CoreWindow" || 
+                className == "SearchHost.Window" ||
+                className == "XamlExplorerHostIslandWindow")
+            {
+                return false;
+            }
+
             if (fgWindow == Win32Helper.GetDesktopWindow()) return false;
 
             // Only counts if the fullscreen window is on the SAME monitor as the taskbar

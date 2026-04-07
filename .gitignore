@@ -483,3 +483,4 @@ $RECYCLE.BIN/
 
 # Local developer notes — not for version control
 CHANGELOG_LOCAL.md
+RELEASE_NOTES_*.md
