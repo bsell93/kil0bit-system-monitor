@@ -20,12 +20,12 @@ namespace Kil0bitSystemMonitor
         private readonly MainViewModel _viewModel = null!;
         private readonly ConfigService _config = null!;
         private readonly TelemetryService _telemetry = null!;
-        private readonly System.Threading.Timer _zOrderTimer = null!;
         private readonly Microsoft.UI.Dispatching.DispatcherQueue _dispatcher = null!;
 
         private bool _isHovered = false;
         private bool _trackingMouse = false;
-        private DateTime? _fullscreenSince = null; // debounce: only hide after consistently fullscreen for 800ms
+        private bool _shellFullscreen = false; // Set by ABN_FULLSCREENAPP notification from the shell
+        private bool _appbarRegistered = false;
         private readonly Action<SystemMetrics>? _onMetricsUpdated;
         private readonly System.ComponentModel.PropertyChangedEventHandler? _onConfigPropertyChanged;
         private uint _currentDpi = 96;
@@ -72,6 +72,14 @@ namespace Kil0bitSystemMonitor
         public const int ICON_SMALL = 0;
 
         public const int WM_SHOW_SETTINGS = 0x0501; // WM_APP + 1
+
+        // Appbar constants — same shell API the Windows taskbar uses
+        private const uint WM_APPBAR_CALLBACK = 0x0502; // WM_APP + 2 — shell sends notifications here
+        private const uint ABM_NEW = 0x00000000;
+        private const uint ABM_REMOVE = 0x00000001;
+        private const uint ABM_ACTIVATE = 0x00000006;
+        private const uint ABM_WINDOWPOSCHANGED = 0x00000009;
+        private const uint ABN_FULLSCREENAPP = 0x00000002;
 
         [StructLayout(LayoutKind.Sequential)]
         private struct WINDOWPOS
@@ -171,9 +179,10 @@ namespace Kil0bitSystemMonitor
                 _currentDpi = GetDpiForWindow(_hWnd);
                 if (_currentDpi == 0) _currentDpi = 96;
                 _dpiScale = _currentDpi / 96.0f;
-                // We explicitly do NOT parent the overlay to the taskbar (GWL_HWNDPARENT) anymore.
-                // In Windows 11, parenting a layered window to Shell_TrayWnd causes the Desktop Window Manager (DWM)
-                // and XAML islands to occasionally clip or hide the overlay when the taskbar is clicked.
+                // Register as a Windows appbar — this gives the overlay the same z-order and
+                // visibility semantics as the taskbar itself. The shell will send us
+                // ABN_FULLSCREENAPP notifications so we hide/show with the taskbar.
+                RegisterAppBar();
                 
                 ShowWindow(_hWnd, 5); // SW_SHOW
                 
@@ -191,10 +200,6 @@ namespace Kil0bitSystemMonitor
                     });
                 };
                 _telemetry.MetricsUpdated += _onMetricsUpdated;
-
-                // Enforce TopMost Z-order against Win11 taskbar
-                // Fast fallback timer (500ms) to ensure we pop back over the taskbar if clicked
-                _zOrderTimer = new System.Threading.Timer(EnforceZOrder, null, 0, 500);
 
                 _onConfigPropertyChanged = (s, e) =>
                 {
@@ -230,14 +235,40 @@ namespace Kil0bitSystemMonitor
             }
         }
 
-        private void EnforceZOrder(object? state)
+        /// <summary>
+        /// Registers this window as a Windows appbar via SHAppBarMessage(ABM_NEW).
+        /// This gives the overlay the same z-order and visibility semantics as the
+        /// taskbar — the shell will send ABN_FULLSCREENAPP notifications so we
+        /// hide/show in lockstep with the taskbar.
+        /// We do NOT call ABM_SETPOS (no screen space reservation) because the
+        /// overlay floats on top of the taskbar rather than beside it.
+        /// </summary>
+        private void RegisterAppBar()
         {
-            _dispatcher.TryEnqueue(() => 
-            {
-                UpdateVisibility();
-                if (ShouldShowOverlay())
-                    SetWindowPos(_hWnd, (IntPtr)(-1), 0, 0, 0, 0, 0x0002 | 0x0001 | 0x0010 | 0x0040); // HWND_TOPMOST | SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE | SWP_SHOWWINDOW
-            });
+            if (_appbarRegistered || _hWnd == IntPtr.Zero) return;
+
+            APPBARDATA abd = new APPBARDATA();
+            abd.cbSize = Marshal.SizeOf(typeof(APPBARDATA));
+            abd.hWnd = _hWnd;
+            abd.uCallbackMessage = WM_APPBAR_CALLBACK;
+
+            IntPtr result = SHAppBarMessage(ABM_NEW, ref abd);
+            _appbarRegistered = (result != IntPtr.Zero);
+        }
+
+        /// <summary>
+        /// Unregisters this window from the appbar system.
+        /// </summary>
+        private void UnregisterAppBar()
+        {
+            if (!_appbarRegistered || _hWnd == IntPtr.Zero) return;
+
+            APPBARDATA abd = new APPBARDATA();
+            abd.cbSize = Marshal.SizeOf(typeof(APPBARDATA));
+            abd.hWnd = _hWnd;
+
+            SHAppBarMessage(ABM_REMOVE, ref abd);
+            _appbarRegistered = false;
         }
 
         private void UpdateVisibility()
@@ -247,22 +278,22 @@ namespace Kil0bitSystemMonitor
 
         /// <summary>
         /// Single source of truth: returns true when the overlay should be visible.
-        /// Mirrors Windows taskbar behaviour exactly:
-        ///   • Auto-hide taskbar retracted (≤4 px strip) → overlay hidden
-        ///   • Fullscreen app on the SAME monitor as the taskbar → hidden (800 ms debounce)
-        ///   • Fullscreen app on a DIFFERENT monitor → overlay stays visible
-        ///   • Task View / any other case where taskbar is shown → overlay visible
+        /// Uses the shell's ABN_FULLSCREENAPP notification (set via _shellFullscreen)
+        /// to mirror the taskbar's behavior exactly. Also checks:
+        ///   • User toggle (ShowOverlay)
+        ///   • Auto-hide taskbar retracted (≤4 px strip) → overlay hidden
+        ///   • Shell fullscreen notification → overlay hidden
         /// </summary>
         private bool ShouldShowOverlay()
         {
             if (!_config.Config.ShowOverlay) return false;
 
             IntPtr taskbarHwnd = Win32Helper.FindWindow("Shell_TrayWnd", null!);
-            if (taskbarHwnd == IntPtr.Zero) return true; // Can’t find taskbar — stay visible
+            if (taskbarHwnd == IntPtr.Zero) return true; // Can't find taskbar — stay visible
 
             // ── Auto-hide check ─────────────────────────────────────────────────────────
             // When auto-hide is active and the taskbar has retracted it collapses to a
-            // 1–2 px edge strip. Height (or width) ≤ 4 px = retracted. Hide the overlay to match.
+            // 1–2 px edge strip. Height (or width) ≤ 4 px = retracted. Hide the overlay to match.
             if (Win32Helper.GetWindowRect(taskbarHwnd, out Win32Helper.RECT tbRect))
             {
                 int h = tbRect.Bottom - tbRect.Top;
@@ -271,76 +302,16 @@ namespace Kil0bitSystemMonitor
                     return false;
             }
 
-            // ── Fullscreen on the SAME monitor as the taskbar ───────────────────────────
-            if (_config.Config.HideOnFullscreen)
-            {
-                IntPtr taskbarMonitor = MonitorFromWindow(taskbarHwnd, 2); // MONITOR_DEFAULTTONEAREST
-                bool isFullscreen = IsFullscreenOnTaskbarMonitor(taskbarMonitor);
-                if (isFullscreen)
-                {
-                    if (_fullscreenSince == null) _fullscreenSince = DateTime.UtcNow;
-                    // 800 ms debounce — prevents flicker during app launch transients
-                    if ((DateTime.UtcNow - _fullscreenSince.Value).TotalMilliseconds >= 800)
-                        return false;
-                }
-                else
-                {
-                    _fullscreenSince = null;
-                }
-            }
+            // ── Shell fullscreen notification ───────────────────────────────────────────
+            // ABN_FULLSCREENAPP sets _shellFullscreen. This is the same signal the
+            // taskbar itself uses to decide whether to hide.
+            if (_config.Config.HideOnFullscreen && _shellFullscreen)
+                return false;
 
             return true;
         }
 
-        /// <summary>
-        /// Returns true ONLY when the foreground window is fullscreen on
-        /// <paramref name="taskbarMonitor"/>. A fullscreen app on a DIFFERENT monitor
-        /// does not trigger this — matching real Windows taskbar behaviour.
-        /// </summary>
-        private bool IsFullscreenOnTaskbarMonitor(IntPtr taskbarMonitor)
-        {
-            IntPtr fgWindow = GetForegroundWindow();
-            if (fgWindow == IntPtr.Zero || fgWindow == _hWnd) return false;
-
-            System.Text.StringBuilder sb = new System.Text.StringBuilder(256);
-            Win32Helper.GetClassName(fgWindow, sb, sb.Capacity);
-            string className = sb.ToString();
-
-            // Never hide for the shell, desktop, and transparent Windows 11 hit-testing/search overlays
-            if (className == "Shell_TrayWnd" || 
-                className == "Shell_SecondaryTrayWnd" || 
-                className == "WorkerW" || 
-                className == "Progman" || 
-                className == "Windows.UI.Core.CoreWindow" || 
-                className == "SearchHost.Window" ||
-                className == "XamlExplorerHostIslandWindow" ||
-                className == "StartMenuExperienceHost" ||
-                className == "ControlCenterWindow")
-            {
-                return false;
-            }
-
-            if (fgWindow == Win32Helper.GetDesktopWindow()) return false;
-
-            // Only counts if the fullscreen window is on the SAME monitor as the taskbar
-            IntPtr fgMonitor = MonitorFromWindow(fgWindow, 2);
-            if (fgMonitor != taskbarMonitor) return false;
-
-            // Verify the window actually covers the entire monitor rectangle
-            if (Win32Helper.GetWindowRect(fgWindow, out Win32Helper.RECT rect))
-            {
-                MONITORINFO mi = new MONITORINFO();
-                mi.cbSize = (uint)Marshal.SizeOf(typeof(MONITORINFO));
-                if (GetMonitorInfo(taskbarMonitor, ref mi))
-                {
-                    return rect.Left   <= mi.rcMonitor.Left   &&
-                           rect.Top    <= mi.rcMonitor.Top    &&
-                           rect.Right  >= mi.rcMonitor.Right  &&
-                           rect.Bottom >= mi.rcMonitor.Bottom;
-                }
-            }
-            return false;
-        }
+        // IsFullscreenOnTaskbarMonitor removed — replaced by shell ABN_FULLSCREENAPP notification
 
         private void AlignToTaskbarCenter()
         {
@@ -681,7 +652,9 @@ namespace Kil0bitSystemMonitor
             {
                 _telemetry.MetricsUpdated -= _onMetricsUpdated;
                 _config.Config.PropertyChanged -= _onConfigPropertyChanged;
-                _zOrderTimer?.Dispose();
+
+                // Unregister from the appbar system before destroying the window
+                UnregisterAppBar();
 
                 ClearCaches();
                 _offscreenGraphics?.Dispose();
@@ -785,18 +758,39 @@ namespace Kil0bitSystemMonitor
             }
             if (msg == WM_WINDOWPOSCHANGED)
             {
-                // Windows changed our z-order — check if we need to re-assert TopMost immediately.
-                // SWP_NOZORDER (0x0004) being absent means z-order was actually changed.
-                const uint SWP_NOZORDER = 0x0004;
-                WINDOWPOS pos = Marshal.PtrToStructure<WINDOWPOS>(lParam);
-                bool zOrderChanged = (pos.flags & SWP_NOZORDER) == 0;
-                if (zOrderChanged)
+                // Notify the shell that our position changed so it can track us correctly
+                if (_appbarRegistered)
                 {
-                    // Re-assert on the dispatcher; avoid fighting Windows synchronously inside WndProc.
+                    APPBARDATA abd = new APPBARDATA();
+                    abd.cbSize = Marshal.SizeOf(typeof(APPBARDATA));
+                    abd.hWnd = _hWnd;
+                    SHAppBarMessage(ABM_WINDOWPOSCHANGED, ref abd);
+                }
+                return IntPtr.Zero;
+            }
+            if (msg == WM_APPBAR_CALLBACK)
+            {
+                // Shell appbar notification — wParam contains the notification code
+                uint notifyCode = (uint)wParam.ToInt32();
+                if (notifyCode == ABN_FULLSCREENAPP)
+                {
+                    // lParam is TRUE when a fullscreen app is entering, FALSE when leaving
+                    bool entering = lParam != IntPtr.Zero;
+                    _shellFullscreen = entering;
+
                     _dispatcher.TryEnqueue(() =>
                     {
-                        if (ShouldShowOverlay())
+                        if (_shellFullscreen && _config.Config.HideOnFullscreen)
                         {
+                            // Drop below fullscreen window — same behavior as taskbar
+                            SetWindowPos(_hWnd, (IntPtr)1, 0, 0, 0, 0,
+                                0x0002 | 0x0001 | 0x0010); // HWND_BOTTOM | SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE
+                            ShowWindow(_hWnd, 0); // SW_HIDE
+                        }
+                        else
+                        {
+                            // Restore — come back to topmost, same as taskbar
+                            ShowWindow(_hWnd, 5); // SW_SHOW
                             SetWindowPos(_hWnd, (IntPtr)(-1), 0, 0, 0, 0,
                                 0x0002 | 0x0001 | 0x0010); // HWND_TOPMOST | SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE
                         }
@@ -1101,5 +1095,20 @@ namespace Kil0bitSystemMonitor
 
         [DllImport("shcore.dll")]
         static extern int GetProcessDpiAwareness(IntPtr hprocess, out int awareness);
+
+        // Appbar P/Invoke — same shell API the Windows taskbar uses
+        [StructLayout(LayoutKind.Sequential)]
+        struct APPBARDATA
+        {
+            public int cbSize;
+            public IntPtr hWnd;
+            public uint uCallbackMessage;
+            public uint uEdge;
+            public Win32Helper.RECT rc;
+            public IntPtr lParam;
+        }
+
+        [DllImport("shell32.dll", CallingConvention = CallingConvention.StdCall)]
+        static extern IntPtr SHAppBarMessage(uint dwMessage, ref APPBARDATA pData);
     }
 }
