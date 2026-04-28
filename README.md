@@ -2,7 +2,7 @@
 
 <div align="center">
 
-<img src="icon.png" width="100" height="100" alt="kil0bit System Monitor" />
+<img src="icon.ico" width="100" height="100" alt="kil0bit System Monitor" />
 
 **The high-precision, low-latency system monitor for Windows 11.**  
 Built with C#, WPF, and raw Win32 power  
