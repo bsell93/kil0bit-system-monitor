@@ -16,7 +16,7 @@ OutputBaseFilename=Kil0bitSystemMonitor-v{#AppVersion}-Setup
 Compression=lzma2/ultra64
 SolidCompression=yes
 WizardStyle=modern
-IconFilename=icon.ico
+SetupIconFile=icon.ico
 UninstallDisplayIcon={app}\Kil0bitSystemMonitor.exe
 
 [Languages]
