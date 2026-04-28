@@ -2,8 +2,8 @@
     <PropertyGroup>
         <TargetFramework>net8.0-windows</TargetFramework>
         <OutputType>WinExe</OutputType>
-        <!-- <ApplicationIcon>icon.ico</ApplicationIcon> -->
-        <!-- <Win32Icon>icon.ico</Win32Icon> -->
+        <ApplicationIcon>icon.ico</ApplicationIcon>
+        <Win32Icon>icon.ico</Win32Icon>
         <Authors>KB - kil0bit</Authors>
         <Company>KB - kil0bit</Company>
         <Product>Kil0bit System Monitor</Product>
