@@ -48,10 +48,9 @@ jobs:
           -o release-output
 
     - name: Build Inno Setup Installer
-      uses: aybe/Inno-Setup-Action@v1.2.2
-      with:
-        filepath: installer.iss
-        options: /DAppVersion=${{ github.event.inputs.version }}
+      shell: pwsh
+      run: |
+        & "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" installer.iss /DAppVersion=${{ github.event.inputs.version }}
 
     - name: Create GitHub Release
       uses: softprops/action-gh-release@v2
