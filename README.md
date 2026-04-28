@@ -1,4 +1,4 @@
-### kil0bit System Monitor
+# kil0bit System Monitor v3.0.0 Gold
 
 <div align="center">
 
@@ -34,11 +34,13 @@ Kil0bit System Monitor is a modern successor to legacy taskbar monitors. It’s 
 ---
 
 ## ✨ v3.0.0 Gold Highlights
-- **🚀 Multi-Disk Monitoring**: Track activity across C:, D:, and all your drives simultaneously with a dynamic 3x3 layout.
-- **🎨 High-Res Branding**: Full 32-bit ARGB multi-resolution icons for a pixel-perfect Taskbar and Task Manager presence.
-- **🛡️ Admin-Less Stability**: Access hardware telemetry without UAC elevation or system crashes.
-- **⚡ .NET 8.0 Engine**: Re-engineered for maximum performance and ultra-low CPU overhead.
+- **🪶 Ultra-Lightweight**: Re-engineered for a tiny **~2.5 MB footprint** by optimizing for the native .NET 8 runtime.
+- **🚀 Multi-Disk Monitoring**: Track activity across all your drives simultaneously with a dynamic 3x3 layout.
+- **📐 Smart Alignment**: Pixel-perfect layout stability across Icon, Text, and Compact modes.
+- **🛡️ Admin-Less Telemetry**: Access hardware telemetry without UAC elevation or system crashes.
+- **🖥️ Taskbar Stability**: Hybrid Owned-Appbar integration for rock-solid visibility during system interactions.
 - **🏠 Refined Dashboard**: Modern, high-contrast Welcome screen with glassmorphism effects.
+- **🎨 High-Res Branding**: Full 32-bit ARGB multi-resolution icons for a professional OS presence.
 
 ## 📸 Screenshots
 
@@ -59,13 +61,15 @@ Kil0bit System Monitor is a modern successor to legacy taskbar monitors. It’s 
 
 ---
 
-## 📥 Installation
+### 1. Uninstall Previous Versions
+> [!IMPORTANT]
+> Please **uninstall all previous versions** of Kil0bit System Monitor before installing v3.0 to ensure a smooth transition to the new engine.
 
-### 1. Download the Installer
+### 2. Download the Installer
 Head over to the [**Releases**](https://github.com/kil0bit-kb/kil0bit-system-monitor/releases) page and download:
 - **`Kil0bitSystemMonitor-Setup.exe`**: The official high-performance installer.
 
-### 2. Run & Enjoy
+### 3. Run & Enjoy
 Launch the setup and follow the prompts. The app will automatically initialize the v3.0 overlay and open the high-contrast Welcome dashboard for your first configuration.
 
 ---
@@ -74,7 +78,7 @@ Launch the setup and follow the prompts. The app will automatically initialize t
 
 ### Prerequisites
 - **Visual Studio 2022** (17.10+) with the "Windows App Development" workload.
-- **.NET 10.0 SDK**.
+- **.NET 8.0 SDK**.
 - **Windows 11** (recommended) or Windows 10 (Build 19041+).
 
 ### Steps
@@ -86,7 +90,7 @@ cd kil0bit-system-monitor
 # Build the project
 dotnet build -c Release
 ```
-The resulting executable will be in `kil0bit-system-monitor/bin/Release/net10.0-windows10.0.19041.0/win-x64/`.
+The resulting executable will be in `kil0bit-system-monitor/bin/Release/net8.0-windows/win-x64/`.
 
 ---
 
