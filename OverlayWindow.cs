@@ -272,6 +272,7 @@ namespace Kil0bitSystemMonitor
         }
 
         private enum GraphMode { Percent, Dynamic }
+        private enum ThresholdMode { None, Percent, Temperature }
         // Reserve: worst-case string to measure for stable column width. Null = use live Value width.
         private class MetricItem
         {
@@ -282,6 +283,11 @@ namespace Kil0bitSystemMonitor
             public float GraphValue { get; set; }
             public GraphMode GraphMode { get; set; } = GraphMode.Percent;
             public float GraphFloor { get; set; } = 100f;
+            public MetricDisplayMode DisplayMode { get; set; } = MetricDisplayMode.TextGraph;
+            public ThresholdMode ThresholdMode { get; set; } = ThresholdMode.None;
+            public string ThresholdKey { get; set; } = "";
+            public float ThresholdValue { get; set; }
+            public ThresholdSeverity Severity { get; set; } = ThresholdSeverity.Normal;
         }
 
         private void UpdateLayer()
@@ -302,20 +308,28 @@ namespace Kil0bitSystemMonitor
 
             float[] widths = new float[columns.Count];
             float total = 2 * scale;                         // left outer margin
-            bool drawGraphs = _config.Config.EnableInlineGraphs;
-            float graphLaneWidth = drawGraphs ? (34f * scale) : 0f;
-            float graphLaneGap = drawGraphs ? (4f * scale) : 0f;
+            bool globalGraphsEnabled = _config.Config.EnableInlineGraphs;
+            float graphLaneWidth = 34f * scale;
+            float graphLaneGap = 4f * scale;
             for (int i = 0; i < columns.Count; i++)
             {
                 var col = columns[i];
                 float GetItemWidth(MetricItem? item) {
                     if (item == null) return 0;
+                    if (item.DisplayMode == MetricDisplayMode.Graph) return 0;
                     // Use the reserve string width when available so the column never resizes on value change
                     float valW = item.Reserve != null ? GetCachedMeasure(item.Reserve, font) : GetCachedMeasure(item.Value, font);
                     return GetCachedMeasure(item.Label, font) + gap + valW;
                 }
 
-                widths[i] = Math.Max(GetItemWidth(col.Top), GetItemWidth(col.Bottom)) + (pad * 2) + graphLaneGap + graphLaneWidth;
+                bool colNeedsGraphLane =
+                    globalGraphsEnabled &&
+                    ((col.Top != null && col.Top.DisplayMode != MetricDisplayMode.Text) ||
+                     (col.Bottom != null && col.Bottom.DisplayMode != MetricDisplayMode.Text));
+
+                float graphWidthForColumn = colNeedsGraphLane ? graphLaneWidth : 0f;
+                float graphGapForColumn = colNeedsGraphLane ? graphLaneGap : 0f;
+                widths[i] = Math.Max(GetItemWidth(col.Top), GetItemWidth(col.Bottom)) + (pad * 2) + graphGapForColumn + graphWidthForColumn;
 
                 total += widths[i] + podGap;
             }
@@ -345,10 +359,16 @@ namespace Kil0bitSystemMonitor
                 }
 
                 float contentX = cx + pad;
-                float textLaneWidth = Math.Max(0, widths[i] - (2 * pad) - graphLaneGap - graphLaneWidth);
-                float graphX = contentX + textLaneWidth + graphLaneGap;
+                bool colNeedsGraphLane =
+                    globalGraphsEnabled &&
+                    ((col.Top != null && col.Top.DisplayMode != MetricDisplayMode.Text) ||
+                     (col.Bottom != null && col.Bottom.DisplayMode != MetricDisplayMode.Text));
+                float graphWidthForColumn = colNeedsGraphLane ? graphLaneWidth : 0f;
+                float graphGapForColumn = colNeedsGraphLane ? graphLaneGap : 0f;
+                float textLaneWidth = Math.Max(0, widths[i] - (2 * pad) - graphGapForColumn - graphWidthForColumn);
+                float graphX = contentX + textLaneWidth + graphGapForColumn;
 
-                if (drawGraphs)
+                if (colNeedsGraphLane)
                 {
                     DrawInlineGraph(_offscreenGraphics, col.Top, new RectangleF(graphX, 3 * scale, graphLaneWidth, (h / 2f) - (4 * scale)));
                     DrawInlineGraph(_offscreenGraphics, col.Bottom, new RectangleF(graphX, (h / 2f) + (1 * scale), graphLaneWidth, (h / 2f) - (4 * scale)));
@@ -358,9 +378,11 @@ namespace Kil0bitSystemMonitor
                 float y2 = (h / 2f) + (1f * scale);
 
                 Action<MetricItem, float> drawItem = (item, y) => {
+                    if (item.DisplayMode == MetricDisplayMode.Graph) return;
                     float lw = GetCachedMeasure(item.Label, font);
+                    using var valueBrush = new SolidBrush(GetColorForSeverity(item.Severity, (_cachedAccentBrush as SolidBrush)?.Color ?? Color.White));
                     _offscreenGraphics.DrawString(item.Label, font, lBrush, contentX, y);
-                    _offscreenGraphics.DrawString(item.Value, font, vBrush, contentX + lw + gap, y);
+                    _offscreenGraphics.DrawString(item.Value, font, valueBrush, contentX + lw + gap, y);
                 };
 
                 if (col.Top != null && col.Bottom != null)
@@ -390,21 +412,21 @@ namespace Kil0bitSystemMonitor
             bool compact = (_config.Config.DisplayStyle ?? "Text") == "Compact";
             var m = _viewModel.Metrics; var c = _config.Config;
             
-            MetricItem Pct(string key, string f, string cp, string v, float value) => new MetricItem { Label = compact ? cp : f, Value = v, Reserve = "100%", GraphKey = key, GraphValue = value, GraphMode = GraphMode.Percent };
-            MetricItem Temp(string key, string f, string cp, string v, float value) => new MetricItem { Label = compact ? cp : f, Value = v, Reserve = "100°", GraphKey = key, GraphValue = value, GraphMode = GraphMode.Dynamic, GraphFloor = 40f };
-            MetricItem Net(string key, string f, string cp, string v, float value) => new MetricItem { Label = compact ? cp : f, Value = v, Reserve = "999 KB/s", GraphKey = key, GraphValue = value, GraphMode = GraphMode.Dynamic, GraphFloor = 512f };
+            MetricItem Pct(string key, string mode, string f, string cp, string v, float value) => BuildMetricItem(key, mode, compact ? cp : f, v, "100%", value, GraphMode.Percent, 100f, ThresholdMode.Percent, key);
+            MetricItem Temp(string key, string mode, string f, string cp, string v, float value) => BuildMetricItem(key, mode, compact ? cp : f, v, "100°", value, GraphMode.Dynamic, 40f, ThresholdMode.Temperature, key);
+            MetricItem Net(string key, string mode, string f, string cp, string v, float value) => BuildMetricItem(key, mode, compact ? cp : f, v, "999 KB/s", value, GraphMode.Dynamic, 512f, ThresholdMode.None, key);
 
             var list = new System.Collections.Generic.List<(MetricItem?, MetricItem?)>();
             
             if (c.ShowNetUp || c.ShowNetDown) 
-                list.Add((c.ShowNetUp ? Net("net.up", "UP ", "U", m.NetUpText, m.NetUpKbps) : null, c.ShowNetDown ? Net("net.down", "DN ", "D", m.NetDownText, m.NetDownKbps) : null));
+                list.Add((c.ShowNetUp ? Net("net.up", c.NetUpDisplayMode, "UP ", "U", m.NetUpText, m.NetUpKbps) : null, c.ShowNetDown ? Net("net.down", c.NetDownDisplayMode, "DN ", "D", m.NetDownText, m.NetDownKbps) : null));
             
             if (c.ShowCpu || c.ShowRam) 
-                list.Add((c.ShowCpu ? Pct("cpu", "CPU", "C", $"{(int)m.CpuUsage}%", m.CpuUsage) : null, c.ShowRam ? Pct("ram", "RAM", "R", $"{(int)m.RamPercent}%", m.RamPercent) : null));
+                list.Add((c.ShowCpu ? Pct("cpu", c.CpuDisplayMode, "CPU", "C", $"{(int)m.CpuUsage}%", m.CpuUsage) : null, c.ShowRam ? Pct("ram", c.RamDisplayMode, "RAM", "R", $"{(int)m.RamPercent}%", m.RamPercent) : null));
             
             string tempStr = m.GpuTemperature > 0 ? $"{(int)m.GpuTemperature}°" : "N/A";
             if (c.ShowGpu || c.ShowTemp) 
-                list.Add((c.ShowGpu ? Pct("gpu", "GPU", "G", $"{(int)m.GpuUsage}%", m.GpuUsage) : null, c.ShowTemp ? Temp("gpu.temp", "TMP", "T", tempStr, m.GpuTemperature) : null));
+                list.Add((c.ShowGpu ? Pct("gpu", c.GpuDisplayMode, "GPU", "G", $"{(int)m.GpuUsage}%", m.GpuUsage) : null, c.ShowTemp ? Temp("gpu.temp", c.TempDisplayMode, "TMP", "T", tempStr, m.GpuTemperature) : null));
             
             if (c.ShowDisk || c.ShowDiskSpeed)
             {
@@ -421,8 +443,8 @@ namespace Kil0bitSystemMonitor
                         string cdkLabel = letter.ToUpper() + "DK";
 
                         list.Add((
-                            c.ShowDisk ? Pct($"disk.{letter}.space", cdkLabel, letter, $"{(int)d.SpacePercent}%", d.SpacePercent) : null,
-                            c.ShowDiskSpeed ? Pct($"disk.{letter}.activity", "SPD", "S", $"{(int)d.ActivityPercent}%", d.ActivityPercent) : null
+                            c.ShowDisk ? Pct($"disk.{letter}.space", c.DiskSpaceDisplayMode, cdkLabel, letter, $"{(int)d.SpacePercent}%", d.SpacePercent) : null,
+                            c.ShowDiskSpeed ? Pct($"disk.{letter}.activity", c.DiskActivityDisplayMode, "SPD", "S", $"{(int)d.ActivityPercent}%", d.ActivityPercent) : null
                         ));
                     }
                 }
@@ -434,7 +456,7 @@ namespace Kil0bitSystemMonitor
 
         private void UpdateGraphHistories(System.Collections.Generic.List<(MetricItem? Top, MetricItem? Bottom)> columns)
         {
-            int capacity = Math.Clamp(_config.Config.GraphPointCount, 16, 80);
+            int capacity = MetricVisualPolicy.ResolveHistoryPoints(_config.Config.GraphHistoryPreset, _config.Config.GraphPointCount);
             var activeKeys = new System.Collections.Generic.HashSet<string>(StringComparer.Ordinal);
 
             foreach (var (top, bottom) in columns)
@@ -459,7 +481,7 @@ namespace Kil0bitSystemMonitor
 
         private void AddGraphPoint(MetricItem item, int capacity)
         {
-            if (string.IsNullOrWhiteSpace(item.GraphKey))
+            if (string.IsNullOrWhiteSpace(item.GraphKey) || item.DisplayMode == MetricDisplayMode.Text)
             {
                 return;
             }
@@ -479,7 +501,7 @@ namespace Kil0bitSystemMonitor
 
         private void DrawInlineGraph(Graphics graphics, MetricItem? item, RectangleF bounds)
         {
-            if (item == null || bounds.Width <= 4 || bounds.Height <= 4 || !_metricHistories.TryGetValue(item.GraphKey, out var history))
+            if (item == null || item.DisplayMode == MetricDisplayMode.Text || bounds.Width <= 4 || bounds.Height <= 4 || !_metricHistories.TryGetValue(item.GraphKey, out var history))
             {
                 return;
             }
@@ -494,7 +516,7 @@ namespace Kil0bitSystemMonitor
                 ? raw.Select(MetricGraphNormalizer.NormalizePercent).ToArray()
                 : MetricGraphNormalizer.NormalizeSeries(raw, item.GraphFloor);
 
-            var graphBaseColor = HexToColor(_config.Config.GraphColorHex ?? "#00CCFF");
+            var graphBaseColor = GetColorForSeverity(item.Severity, HexToColor(_config.Config.GraphColorHex ?? "#00CCFF"));
             using var linePen = new Pen(Color.FromArgb(Math.Clamp(_config.Config.GraphOpacity + 72, 24, 180), graphBaseColor), 1.2f);
             using var fillBrush = new SolidBrush(Color.FromArgb(Math.Clamp(_config.Config.GraphOpacity, 8, 96), graphBaseColor));
 
@@ -533,6 +555,77 @@ namespace Kil0bitSystemMonitor
             }
 
             return points;
+        }
+
+        private MetricItem BuildMetricItem(
+            string key,
+            string mode,
+            string label,
+            string valueText,
+            string reserve,
+            float value,
+            GraphMode graphMode,
+            float graphFloor,
+            ThresholdMode thresholdMode,
+            string thresholdKey)
+        {
+            var item = new MetricItem
+            {
+                Label = label,
+                Value = valueText,
+                Reserve = reserve,
+                GraphKey = key,
+                GraphValue = value,
+                GraphMode = graphMode,
+                GraphFloor = graphFloor,
+                ThresholdMode = thresholdMode,
+                ThresholdKey = thresholdKey,
+                ThresholdValue = value,
+                DisplayMode = _config.Config.EnableInlineGraphs
+                    ? MetricVisualPolicy.ParseDisplayMode(mode)
+                    : MetricDisplayMode.Text
+            };
+            item.Severity = ResolveSeverity(item);
+            return item;
+        }
+
+        private ThresholdSeverity ResolveSeverity(MetricItem item)
+        {
+            var cfg = _config.Config;
+            if (!cfg.EnableThresholdColors)
+            {
+                return ThresholdSeverity.Normal;
+            }
+
+            return item.ThresholdMode switch
+            {
+                ThresholdMode.Percent => ResolvePercentSeverity(item.ThresholdValue, item.ThresholdKey),
+                ThresholdMode.Temperature => ResolveTempSeverity(item.ThresholdValue),
+                _ => ThresholdSeverity.Normal
+            };
+        }
+
+        private ThresholdSeverity ResolvePercentSeverity(float value, string key)
+        {
+            var pair = MetricVisualPolicy.ResolvePercentThresholds(_config.Config, key);
+            return MetricVisualPolicy.Evaluate(value, pair.Warn, pair.Critical);
+        }
+
+        private ThresholdSeverity ResolveTempSeverity(float value)
+        {
+            if (value <= 0) return ThresholdSeverity.Normal;
+            var pair = MetricVisualPolicy.ResolveTempThresholds(_config.Config);
+            return MetricVisualPolicy.Evaluate(value, pair.Warn, pair.Critical);
+        }
+
+        private Color GetColorForSeverity(ThresholdSeverity severity, Color normal)
+        {
+            return severity switch
+            {
+                ThresholdSeverity.Warning => HexToColor(_config.Config.WarningColorHex ?? "#FFF59D00"),
+                ThresholdSeverity.Critical => HexToColor(_config.Config.CriticalColorHex ?? "#FFFF4D4F"),
+                _ => normal
+            };
         }
 
         private void EnsureOffscreenBuffer(int w, int h)

@@ -278,6 +278,21 @@ namespace Kil0bitSystemMonitor
             c.GraphPointCount = 36;
             c.GraphOpacity = 36;
             c.GraphColorHex = "#00CCFF";
+            c.GraphHistoryPreset = "Medium";
+            c.CpuDisplayMode = "TextGraph";
+            c.RamDisplayMode = "TextGraph";
+            c.GpuDisplayMode = "TextGraph";
+            c.TempDisplayMode = "TextGraph";
+            c.NetUpDisplayMode = "TextGraph";
+            c.NetDownDisplayMode = "TextGraph";
+            c.DiskSpaceDisplayMode = "TextGraph";
+            c.DiskActivityDisplayMode = "TextGraph";
+            c.EnableThresholdColors = true;
+            c.WarningColorHex = "#FFF59D00";
+            c.CriticalColorHex = "#FFFF4D4F";
+            MetricVisualPolicy.ApplyThresholdProfile(c, "Balanced");
+            c.CpuThresholdOverrideEnabled = false;
+            c.TempThresholdOverrideEnabled = false;
             _config.SaveConfig();
         }
 
@@ -334,6 +349,21 @@ namespace Kil0bitSystemMonitor
             c.GraphPointCount = 36;
             c.GraphOpacity = 36;
             c.GraphColorHex = "#00CCFF";
+            c.GraphHistoryPreset = "Medium";
+            c.CpuDisplayMode = "TextGraph";
+            c.RamDisplayMode = "TextGraph";
+            c.GpuDisplayMode = "TextGraph";
+            c.TempDisplayMode = "TextGraph";
+            c.NetUpDisplayMode = "TextGraph";
+            c.NetDownDisplayMode = "TextGraph";
+            c.DiskSpaceDisplayMode = "TextGraph";
+            c.DiskActivityDisplayMode = "TextGraph";
+            c.EnableThresholdColors = true;
+            c.WarningColorHex = "#FFF59D00";
+            c.CriticalColorHex = "#FFFF4D4F";
+            MetricVisualPolicy.ApplyThresholdProfile(c, "Balanced");
+            c.CpuThresholdOverrideEnabled = false;
+            c.TempThresholdOverrideEnabled = false;
             
             StartupService.SetStartup(false);
             _config.SaveConfig();
@@ -351,6 +381,8 @@ namespace Kil0bitSystemMonitor
                         "Accent" => _config.Config.AccentColorHex,
                         "Label" => _config.Config.LabelColorHex,
                         "Graph" => _config.Config.GraphColorHex,
+                        "Warning" => _config.Config.WarningColorHex,
+                        "Critical" => _config.Config.CriticalColorHex,
                         "Background" => _config.Config.BackgroundColorHex,
                         "Pod" => _config.Config.PodColorHex,
                         _ => "#FFFFFF"
@@ -377,6 +409,8 @@ namespace Kil0bitSystemMonitor
                             case "Accent": _config.Config.AccentColorHex = hex; break;
                             case "Label": _config.Config.LabelColorHex = hex; break;
                             case "Graph": _config.Config.GraphColorHex = hex; break;
+                            case "Warning": _config.Config.WarningColorHex = hex; break;
+                            case "Critical": _config.Config.CriticalColorHex = hex; break;
                             case "Background": _config.Config.BackgroundColorHex = hex; break;
                             case "Pod": _config.Config.PodColorHex = hex; break;
                         }
@@ -450,6 +484,15 @@ namespace Kil0bitSystemMonitor
         private void QuitButton_Click(object sender, RoutedEventArgs e)
         {
             App.Quit();
+        }
+
+        private void ThresholdProfile_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (e.AddedItems.Count == 0) return;
+            if (e.AddedItems[0] is ComboBoxItem item && item.Content is string profile)
+            {
+                MetricVisualPolicy.ApplyThresholdProfile(_config.Config, profile);
+            }
         }
     }
 }

@@ -64,6 +64,29 @@ namespace Kil0bitSystemMonitor.Models
         private int _graphPointCount = 36;
         private int _graphOpacity = 36;
         private string _graphColorHex = "#00CCFF";
+        private string _graphHistoryPreset = "Medium";
+        private string _cpuDisplayMode = "TextGraph";
+        private string _ramDisplayMode = "TextGraph";
+        private string _gpuDisplayMode = "TextGraph";
+        private string _tempDisplayMode = "TextGraph";
+        private string _netUpDisplayMode = "TextGraph";
+        private string _netDownDisplayMode = "TextGraph";
+        private string _diskSpaceDisplayMode = "TextGraph";
+        private string _diskActivityDisplayMode = "TextGraph";
+        private bool _enableThresholdColors = true;
+        private int _percentWarnThreshold = 75;
+        private int _percentCriticalThreshold = 90;
+        private int _tempWarnThreshold = 72;
+        private int _tempCriticalThreshold = 84;
+        private string _thresholdProfile = "Balanced";
+        private bool _cpuThresholdOverrideEnabled = false;
+        private int _cpuWarnThreshold = 75;
+        private int _cpuCriticalThreshold = 90;
+        private bool _tempThresholdOverrideEnabled = false;
+        private int _tempWarnThresholdOverride = 72;
+        private int _tempCriticalThresholdOverride = 84;
+        private string _warningColorHex = "#FFF59D00";
+        private string _criticalColorHex = "#FFFF4D4F";
         public bool ShowOverlay { get => _showOverlay; set { _showOverlay = value; OnPropertyChanged(); } }
         public bool LockPosition { get => _lockPosition; set { _lockPosition = value; OnPropertyChanged(); } }
         public bool LaunchOnStartup { get => _launchOnStartup; set { _launchOnStartup = value; OnPropertyChanged(); } }
@@ -100,6 +123,29 @@ namespace Kil0bitSystemMonitor.Models
         public int GraphPointCount { get => _graphPointCount; set { _graphPointCount = Math.Clamp(value, 16, 80); OnPropertyChanged(); } }
         public int GraphOpacity { get => _graphOpacity; set { _graphOpacity = Math.Clamp(value, 8, 96); OnPropertyChanged(); } }
         public string GraphColorHex { get => _graphColorHex; set { _graphColorHex = value; OnPropertyChanged(); } }
+        public string GraphHistoryPreset { get => _graphHistoryPreset; set { _graphHistoryPreset = value; OnPropertyChanged(); } }
+        public string CpuDisplayMode { get => _cpuDisplayMode; set { _cpuDisplayMode = value; OnPropertyChanged(); } }
+        public string RamDisplayMode { get => _ramDisplayMode; set { _ramDisplayMode = value; OnPropertyChanged(); } }
+        public string GpuDisplayMode { get => _gpuDisplayMode; set { _gpuDisplayMode = value; OnPropertyChanged(); } }
+        public string TempDisplayMode { get => _tempDisplayMode; set { _tempDisplayMode = value; OnPropertyChanged(); } }
+        public string NetUpDisplayMode { get => _netUpDisplayMode; set { _netUpDisplayMode = value; OnPropertyChanged(); } }
+        public string NetDownDisplayMode { get => _netDownDisplayMode; set { _netDownDisplayMode = value; OnPropertyChanged(); } }
+        public string DiskSpaceDisplayMode { get => _diskSpaceDisplayMode; set { _diskSpaceDisplayMode = value; OnPropertyChanged(); } }
+        public string DiskActivityDisplayMode { get => _diskActivityDisplayMode; set { _diskActivityDisplayMode = value; OnPropertyChanged(); } }
+        public bool EnableThresholdColors { get => _enableThresholdColors; set { _enableThresholdColors = value; OnPropertyChanged(); } }
+        public int PercentWarnThreshold { get => _percentWarnThreshold; set { _percentWarnThreshold = Math.Clamp(value, 1, 99); OnPropertyChanged(); } }
+        public int PercentCriticalThreshold { get => _percentCriticalThreshold; set { _percentCriticalThreshold = Math.Clamp(value, 1, 99); OnPropertyChanged(); } }
+        public int TempWarnThreshold { get => _tempWarnThreshold; set { _tempWarnThreshold = Math.Clamp(value, 20, 120); OnPropertyChanged(); } }
+        public int TempCriticalThreshold { get => _tempCriticalThreshold; set { _tempCriticalThreshold = Math.Clamp(value, 20, 120); OnPropertyChanged(); } }
+        public string ThresholdProfile { get => _thresholdProfile; set { _thresholdProfile = value; OnPropertyChanged(); } }
+        public bool CpuThresholdOverrideEnabled { get => _cpuThresholdOverrideEnabled; set { _cpuThresholdOverrideEnabled = value; OnPropertyChanged(); } }
+        public int CpuWarnThreshold { get => _cpuWarnThreshold; set { _cpuWarnThreshold = Math.Clamp(value, 1, 99); OnPropertyChanged(); } }
+        public int CpuCriticalThreshold { get => _cpuCriticalThreshold; set { _cpuCriticalThreshold = Math.Clamp(value, 1, 99); OnPropertyChanged(); } }
+        public bool TempThresholdOverrideEnabled { get => _tempThresholdOverrideEnabled; set { _tempThresholdOverrideEnabled = value; OnPropertyChanged(); } }
+        public int TempWarnThresholdOverride { get => _tempWarnThresholdOverride; set { _tempWarnThresholdOverride = Math.Clamp(value, 20, 120); OnPropertyChanged(); } }
+        public int TempCriticalThresholdOverride { get => _tempCriticalThresholdOverride; set { _tempCriticalThresholdOverride = Math.Clamp(value, 20, 120); OnPropertyChanged(); } }
+        public string WarningColorHex { get => _warningColorHex; set { _warningColorHex = value; OnPropertyChanged(); } }
+        public string CriticalColorHex { get => _criticalColorHex; set { _criticalColorHex = value; OnPropertyChanged(); } }
 
         public double X { get => _x; set { _x = value; OnPropertyChanged(); } }
         public double Y { get => _y; set { _y = value; OnPropertyChanged(); } }
