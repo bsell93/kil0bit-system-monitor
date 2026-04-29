@@ -592,8 +592,31 @@
                                         <Slider Minimum="0.5" Maximum="2.0" TickFrequency="0.1" IsSnapToTickEnabled="True" Value="{Binding Config.ScaleFactor, Mode=TwoWay}" Margin="0,0,0,12"/>
 
                                         <ui:ToggleSwitch Header="Enable Capsules" IsOn="{Binding Config.ShowPods, Mode=TwoWay}" Margin="0,0,0,8" />
+                                        <ui:ToggleSwitch Header="Inline Graphs" IsOn="{Binding Config.EnableInlineGraphs, Mode=TwoWay}" Margin="0,0,0,8" />
                                         
                                         <ui:ToggleSwitch Header="Background Plate" IsOn="{Binding Config.ShowBackground, Mode=TwoWay}" Margin="0,0,0,8" />
+
+                                        <TextBlock Text="Graph History Length" FontWeight="SemiBold" FontSize="12" Opacity="0.7" Margin="0,8,0,4"
+                                                   Visibility="{Binding Config.EnableInlineGraphs, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+                                        <Slider Minimum="16" Maximum="80" TickFrequency="4" IsSnapToTickEnabled="True" Value="{Binding Config.GraphPointCount, Mode=TwoWay}" Margin="0,0,0,8"
+                                                Visibility="{Binding Config.EnableInlineGraphs, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+
+                                        <TextBlock Text="Graph Opacity" FontWeight="SemiBold" FontSize="12" Opacity="0.7" Margin="0,0,0,4"
+                                                   Visibility="{Binding Config.EnableInlineGraphs, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+                                        <Slider Minimum="8" Maximum="96" TickFrequency="4" IsSnapToTickEnabled="True" Value="{Binding Config.GraphOpacity, Mode=TwoWay}" Margin="0,0,0,8"
+                                                Visibility="{Binding Config.EnableInlineGraphs, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+
+                                        <Button HorizontalAlignment="Stretch" Height="32" Margin="0,0,0,8" Click="ColorButton_Click" Tag="Graph"
+                                                Visibility="{Binding Config.EnableInlineGraphs, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                            <Grid HorizontalAlignment="Stretch">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="Auto" />
+                                                    <ColumnDefinition Width="*" />
+                                                </Grid.ColumnDefinitions>
+                                                <Border Width="18" Height="18" CornerRadius="3" Background="{Binding Config.GraphColorHex}" BorderBrush="White" BorderThickness="1"/>
+                                                <TextBlock Grid.Column="1" Text="Select Graph Color" Margin="8,0" VerticalAlignment="Center" FontSize="11"/>
+                                            </Grid>
+                                        </Button>
                                         
                                         <Button HorizontalAlignment="Stretch" Height="32" Click="ColorButton_Click" Tag="Background" 
                                                 Visibility="{Binding Config.ShowBackground, Converter={StaticResource BooleanToVisibilityConverter}}">

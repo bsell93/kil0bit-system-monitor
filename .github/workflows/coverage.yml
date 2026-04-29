@@ -1,0 +1,45 @@
+name: Coverage
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  coverage:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Restore test project
+        run: dotnet restore Kil0bitSystemMonitor.Tests/Kil0bitSystemMonitor.Tests.csproj
+
+      - name: Install coverage tools
+        run: |
+          dotnet tool install --global dotnet-coverage
+          dotnet tool install --global dotnet-reportgenerator-globaltool
+
+      - name: Collect coverage
+        run: |
+          dotnet-coverage collect "dotnet test Kil0bitSystemMonitor.Tests/Kil0bitSystemMonitor.Tests.csproj --configuration Release --no-restore" -f cobertura -o coverage.cobertura.xml
+
+      - name: Generate coverage summary
+        run: |
+          reportgenerator "-reports:coverage.cobertura.xml" "-targetdir:coveragereport" "-reporttypes:MarkdownSummaryGithub"
+          cat coveragereport/SummaryGithub.md >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload coverage artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: |
+            coverage.cobertura.xml
+            coveragereport/

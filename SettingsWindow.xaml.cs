@@ -274,6 +274,10 @@ namespace Kil0bitSystemMonitor
             c.IsTextBold = true;
             c.ShowPods = true;
             c.ShowBackground = false;
+            c.EnableInlineGraphs = true;
+            c.GraphPointCount = 36;
+            c.GraphOpacity = 36;
+            c.GraphColorHex = "#00CCFF";
             _config.SaveConfig();
         }
 
@@ -326,6 +330,10 @@ namespace Kil0bitSystemMonitor
             c.IsTextBold = true;
             c.ShowPods = true;
             c.ShowBackground = false;
+            c.EnableInlineGraphs = true;
+            c.GraphPointCount = 36;
+            c.GraphOpacity = 36;
+            c.GraphColorHex = "#00CCFF";
             
             StartupService.SetStartup(false);
             _config.SaveConfig();
@@ -342,6 +350,7 @@ namespace Kil0bitSystemMonitor
                     string currentHex = tag switch {
                         "Accent" => _config.Config.AccentColorHex,
                         "Label" => _config.Config.LabelColorHex,
+                        "Graph" => _config.Config.GraphColorHex,
                         "Background" => _config.Config.BackgroundColorHex,
                         "Pod" => _config.Config.PodColorHex,
                         _ => "#FFFFFF"
@@ -367,6 +376,7 @@ namespace Kil0bitSystemMonitor
                         {
                             case "Accent": _config.Config.AccentColorHex = hex; break;
                             case "Label": _config.Config.LabelColorHex = hex; break;
+                            case "Graph": _config.Config.GraphColorHex = hex; break;
                             case "Background": _config.Config.BackgroundColorHex = hex; break;
                             case "Pod": _config.Config.PodColorHex = hex; break;
                         }

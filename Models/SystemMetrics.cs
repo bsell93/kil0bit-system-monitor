@@ -60,6 +60,10 @@ namespace Kil0bitSystemMonitor.Models
         private bool _showPods = true;
         private string _podColorHex = "#0FFFFFFF"; 
         private bool _alwaysOnTop = true;
+        private bool _enableInlineGraphs = true;
+        private int _graphPointCount = 36;
+        private int _graphOpacity = 36;
+        private string _graphColorHex = "#00CCFF";
         public bool ShowOverlay { get => _showOverlay; set { _showOverlay = value; OnPropertyChanged(); } }
         public bool LockPosition { get => _lockPosition; set { _lockPosition = value; OnPropertyChanged(); } }
         public bool LaunchOnStartup { get => _launchOnStartup; set { _launchOnStartup = value; OnPropertyChanged(); } }
@@ -92,6 +96,10 @@ namespace Kil0bitSystemMonitor.Models
         public bool ShowPods { get => _showPods; set { _showPods = value; OnPropertyChanged(); } }
         public string PodColorHex { get => _podColorHex; set { _podColorHex = value; OnPropertyChanged(); OnPropertyChanged(nameof(PodColor)); } }
         public bool AlwaysOnTop { get => _alwaysOnTop; set { _alwaysOnTop = value; OnPropertyChanged(); } }
+        public bool EnableInlineGraphs { get => _enableInlineGraphs; set { _enableInlineGraphs = value; OnPropertyChanged(); } }
+        public int GraphPointCount { get => _graphPointCount; set { _graphPointCount = Math.Clamp(value, 16, 80); OnPropertyChanged(); } }
+        public int GraphOpacity { get => _graphOpacity; set { _graphOpacity = Math.Clamp(value, 8, 96); OnPropertyChanged(); } }
+        public string GraphColorHex { get => _graphColorHex; set { _graphColorHex = value; OnPropertyChanged(); } }
 
         public double X { get => _x; set { _x = value; OnPropertyChanged(); } }
         public double Y { get => _y; set { _y = value; OnPropertyChanged(); } }

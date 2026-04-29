@@ -1,0 +1,26 @@
+name: Test Suite
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Restore test project
+        run: dotnet restore Kil0bitSystemMonitor.Tests/Kil0bitSystemMonitor.Tests.csproj
+
+      - name: Run tests
+        run: dotnet test Kil0bitSystemMonitor.Tests/Kil0bitSystemMonitor.Tests.csproj --configuration Release --no-restore

@@ -12,6 +12,8 @@ Built with C#, WPF, and raw Win32 power
 [![GitHub release](https://img.shields.io/github/v/release/kil0bit-kb/kil0bit-system-monitor?style=flat-square)](https://github.com/kil0bit-kb/kil0bit-system-monitor/releases)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg?style=flat-square)](LICENSE)
 [![.NET 8](https://img.shields.io/badge/.NET-8.0-blueviolet?style=flat-square)](https://dotnet.microsoft.com/en-us/download/dotnet/8.0)
+[![Tests](https://github.com/kil0bit-kb/kil0bit-system-monitor/actions/workflows/tests.yml/badge.svg)](https://github.com/kil0bit-kb/kil0bit-system-monitor/actions/workflows/tests.yml)
+[![Coverage](https://github.com/kil0bit-kb/kil0bit-system-monitor/actions/workflows/coverage.yml/badge.svg)](https://github.com/kil0bit-kb/kil0bit-system-monitor/actions/workflows/coverage.yml)
 
 </div>
 
