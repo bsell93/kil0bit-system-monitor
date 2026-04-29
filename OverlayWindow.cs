@@ -478,14 +478,63 @@ namespace Kil0bitSystemMonitor
             MetricItem Temp(string key, string mode, string graphStyle, string f, string cp, string v, float value) => BuildMetricItem(key, mode, graphStyle, compact ? cp : f, v, "100°", value, GraphMode.Dynamic, 40f, ThresholdMode.Temperature, key);
             MetricItem Net(string key, string mode, string graphStyle, string f, string cp, string v, float value) => BuildMetricItem(key, mode, graphStyle, compact ? cp : f, v, "999 KB/s", value, GraphMode.Dynamic, 512f, ThresholdMode.None, key);
             MetricItem DiskIo(string key, string mode, string graphStyle, string f, string cp, string v, float value) => BuildMetricItem(key, mode, graphStyle, compact ? cp : f, v, "999 MB/s", value, GraphMode.Dynamic, 512f, ThresholdMode.None, key);
+            MetricItem Detail(
+                string key,
+                string mode,
+                string graphStyle,
+                string f,
+                string cp,
+                string v,
+                string reserve,
+                float graphValue,
+                float graphFloor) => BuildMetricItem(key, mode, graphStyle, compact ? cp : f, v, reserve, graphValue, GraphMode.Dynamic, graphFloor, ThresholdMode.None, key);
 
             var list = new System.Collections.Generic.List<(MetricItem?, MetricItem?)>();
             
             if (c.ShowNetUp || c.ShowNetDown) 
                 list.Add((c.ShowNetUp ? Net("net.up", c.NetUpDisplayMode, c.NetUpGraphStyle, "UP ", "U", m.NetUpText, m.NetUpKbps) : null, c.ShowNetDown ? Net("net.down", c.NetDownDisplayMode, c.NetDownGraphStyle, "DN ", "D", m.NetDownText, m.NetDownKbps) : null));
             
-            if (c.ShowCpu || c.ShowRam) 
-                list.Add((c.ShowCpu ? Pct("cpu", c.CpuDisplayMode, c.CpuGraphStyle, "CPU", "C", $"{(int)m.CpuUsage}%", m.CpuUsage) : null, c.ShowRam ? Pct("ram", c.RamDisplayMode, c.RamGraphStyle, "RAM", "R", $"{(int)m.RamPercent}%", m.RamPercent) : null));
+            var cpuRamItems = new System.Collections.Generic.List<MetricItem>();
+            if (c.ShowCpuPercent)
+            {
+                cpuRamItems.Add(Pct("cpu", c.CpuDisplayMode, c.CpuGraphStyle, "CPU", "C", $"{(int)m.CpuUsage}%", m.CpuUsage));
+            }
+            if (c.ShowCpuClock)
+            {
+                cpuRamItems.Add(Detail(
+                    "cpu.clock",
+                    c.CpuClockDisplayMode,
+                    c.CpuClockGraphStyle,
+                    "CLK",
+                    "K",
+                    MetricTextFormatter.FormatCpuClock(m.CpuClockMhz),
+                    "5.80 GHz",
+                    m.CpuClockMhz,
+                    1000f));
+            }
+            if (c.ShowRamPercent)
+            {
+                cpuRamItems.Add(Pct("ram", c.RamDisplayMode, c.RamGraphStyle, "RAM", "R", $"{(int)m.RamPercent}%", m.RamPercent));
+            }
+            if (c.ShowRamUsedFreeGb)
+            {
+                cpuRamItems.Add(Detail(
+                    "ram.usedfree",
+                    c.RamUsedFreeDisplayMode,
+                    c.RamUsedFreeGraphStyle,
+                    "MEM",
+                    "M",
+                    MetricTextFormatter.FormatRamUsedFree(m.RamUsedGb, m.RamFreeGb),
+                    "64.0/64.0 GB",
+                    (float)m.RamUsedGb,
+                    4f));
+            }
+            for (int i = 0; i < cpuRamItems.Count; i += 2)
+            {
+                MetricItem top = cpuRamItems[i];
+                MetricItem? bottom = i + 1 < cpuRamItems.Count ? cpuRamItems[i + 1] : null;
+                list.Add((top, bottom));
+            }
             
             string tempStr = m.GpuTemperature > 0 ? $"{(int)m.GpuTemperature}°" : "N/A";
             if (c.ShowGpu || c.ShowTemp) 

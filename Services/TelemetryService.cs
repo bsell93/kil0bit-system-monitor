@@ -12,6 +12,9 @@ namespace Kil0bitSystemMonitor.Services
     public class TelemetryService : IDisposable
     {
         private readonly PerformanceCounter _cpuCounter;
+        private readonly PerformanceCounter? _cpuClockCounter;
+        private readonly PerformanceCounter? _cpuPerformanceCounter;
+        private readonly float _cpuBaseClockMhz;
         private class DiskCounterSet : IDisposable {
             public PerformanceCounter Usage { get; set; } = null!;
             public PerformanceCounter Read { get; set; } = null!;
@@ -147,6 +150,9 @@ namespace Kil0bitSystemMonitor.Services
         {
             _config = config;
             _cpuCounter = new PerformanceCounter("Processor", "% Processor Time", "_Total");
+            _cpuClockCounter = TryCreateCpuClockCounter();
+            _cpuPerformanceCounter = TryCreateCpuPerformanceCounter();
+            _cpuBaseClockMhz = GetCpuBaseClockMhz();
             
             _config.Config.PropertyChanged += Config_PropertyChanged;
             
@@ -424,6 +430,7 @@ namespace Kil0bitSystemMonitor.Services
 
             // CPU
             metrics.CpuUsage = _cpuCounter.NextValue();
+            metrics.CpuClockMhz = GetCpuClockMhz();
 
             // RAM
             var memStatus = new MEMORYSTATUSEX();
@@ -431,6 +438,10 @@ namespace Kil0bitSystemMonitor.Services
             {
                 ulong used = memStatus.ullTotalPhys - memStatus.ullAvailPhys;
                 metrics.RamPercent = (float)used / memStatus.ullTotalPhys * 100f;
+                const double gb = 1024d * 1024d * 1024d;
+                metrics.RamUsedGb = used / gb;
+                metrics.RamFreeGb = memStatus.ullAvailPhys / gb;
+                metrics.RamTotalGb = memStatus.ullTotalPhys / gb;
             }
 
             // GPU
@@ -616,6 +627,108 @@ namespace Kil0bitSystemMonitor.Services
             }
             if (kbps >= 100f) return $"{kbps:F0} KB/s";     // 125 KB/s
             return $"{kbps:F1} KB/s";                       // 99.9 KB/s
+        }
+
+        private static PerformanceCounter? TryCreateCpuClockCounter()
+        {
+            try
+            {
+                var counter = new PerformanceCounter("Processor Information", "Processor Frequency", "_Total");
+                _ = counter.NextValue();
+                return counter;
+            }
+            catch
+            {
+                return null;
+            }
+        }
+
+        private static PerformanceCounter? TryCreateCpuPerformanceCounter()
+        {
+            try
+            {
+                var counter = new PerformanceCounter("Processor Information", "% Processor Performance", "_Total");
+                _ = counter.NextValue();
+                return counter;
+            }
+            catch
+            {
+                return null;
+            }
+        }
+
+        private static float GetCpuBaseClockMhz()
+        {
+            try
+            {
+                using var searcher = new ManagementObjectSearcher("SELECT MaxClockSpeed FROM Win32_Processor");
+                using var results = searcher.Get();
+                foreach (ManagementObject obj in results)
+                {
+                    try
+                    {
+                        if (obj["MaxClockSpeed"] != null)
+                        {
+                            return Convert.ToSingle(obj["MaxClockSpeed"]);
+                        }
+                    }
+                    finally
+                    {
+                        obj.Dispose();
+                    }
+                }
+            }
+            catch { }
+
+            return 0f;
+        }
+
+        private float GetCpuClockMhz()
+        {
+            try
+            {
+                if (_cpuPerformanceCounter != null && _cpuBaseClockMhz > 0)
+                {
+                    float percent = _cpuPerformanceCounter.NextValue();
+                    if (percent > 0)
+                    {
+                        return _cpuBaseClockMhz * (percent / 100f);
+                    }
+                }
+
+                if (_cpuClockCounter != null)
+                {
+                    float value = _cpuClockCounter.NextValue();
+                    if (value > 0)
+                    {
+                        return value;
+                    }
+                }
+            }
+            catch { }
+
+            try
+            {
+                using var searcher = new ManagementObjectSearcher("SELECT CurrentClockSpeed FROM Win32_Processor");
+                using var results = searcher.Get();
+                foreach (ManagementObject obj in results)
+                {
+                    try
+                    {
+                        if (obj["CurrentClockSpeed"] != null)
+                        {
+                            return Convert.ToSingle(obj["CurrentClockSpeed"]);
+                        }
+                    }
+                    finally
+                    {
+                        obj.Dispose();
+                    }
+                }
+            }
+            catch { }
+
+            return 0f;
         }
 
 
@@ -930,6 +1043,8 @@ namespace Kil0bitSystemMonitor.Services
                 _timer?.Dispose();
                 StopSmiReader();
                 _cpuCounter.Dispose();
+                _cpuClockCounter?.Dispose();
+                _cpuPerformanceCounter?.Dispose();
                 foreach (var set in _diskCounters.Values) set.Dispose();
                 foreach (var c in _gpuCounters.Values) c.Dispose();
             }

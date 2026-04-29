@@ -15,5 +15,6 @@
   <ItemGroup>
     <Compile Include="..\Helpers\MetricGraphHistory.cs" Link="Helpers\MetricGraphHistory.cs" />
     <Compile Include="..\Helpers\MetricVisualPolicy.cs" Link="Helpers\MetricVisualPolicy.cs" />
+    <Compile Include="..\Helpers\MetricTextFormatter.cs" Link="Helpers\MetricTextFormatter.cs" />
   </ItemGroup>
 </Project>

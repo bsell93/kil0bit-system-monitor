@@ -281,7 +281,9 @@ namespace Kil0bitSystemMonitor
             c.GraphHistoryPreset = "Medium";
             c.InlineGraphStyle = "Line";
             c.CpuGraphStyle = "Line";
+            c.CpuClockGraphStyle = "Line";
             c.RamGraphStyle = "Line";
+            c.RamUsedFreeGraphStyle = "Line";
             c.GpuGraphStyle = "Line";
             c.TempGraphStyle = "Line";
             c.NetUpGraphStyle = "Line";
@@ -289,7 +291,9 @@ namespace Kil0bitSystemMonitor
             c.DiskSpaceGraphStyle = "Line";
             c.DiskActivityGraphStyle = "Line";
             c.CpuDisplayMode = "TextGraph";
+            c.CpuClockDisplayMode = "TextGraph";
             c.RamDisplayMode = "TextGraph";
+            c.RamUsedFreeDisplayMode = "TextGraph";
             c.GpuDisplayMode = "TextGraph";
             c.TempDisplayMode = "TextGraph";
             c.NetUpDisplayMode = "TextGraph";
@@ -332,7 +336,9 @@ namespace Kil0bitSystemMonitor
             c.AlwaysOnTop = true;
             
             c.ShowCpu = true;
+            c.ShowCpuClock = true;
             c.ShowRam = true;
+            c.ShowRamUsedFreeGb = true;
             c.ShowGpu = true;
             c.ShowTemp = true;
             c.ShowDisk = true;
@@ -363,7 +369,9 @@ namespace Kil0bitSystemMonitor
             c.GraphHistoryPreset = "Medium";
             c.InlineGraphStyle = "Line";
             c.CpuGraphStyle = "Line";
+            c.CpuClockGraphStyle = "Line";
             c.RamGraphStyle = "Line";
+            c.RamUsedFreeGraphStyle = "Line";
             c.GpuGraphStyle = "Line";
             c.TempGraphStyle = "Line";
             c.NetUpGraphStyle = "Line";
@@ -371,7 +379,9 @@ namespace Kil0bitSystemMonitor
             c.DiskSpaceGraphStyle = "Line";
             c.DiskActivityGraphStyle = "Line";
             c.CpuDisplayMode = "TextGraph";
+            c.CpuClockDisplayMode = "TextGraph";
             c.RamDisplayMode = "TextGraph";
+            c.RamUsedFreeDisplayMode = "TextGraph";
             c.GpuDisplayMode = "TextGraph";
             c.TempDisplayMode = "TextGraph";
             c.NetUpDisplayMode = "TextGraph";

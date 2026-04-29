@@ -370,15 +370,31 @@
                                                         <ColumnDefinition Width="Auto" />
                                                     </Grid.ColumnDefinitions>
                                                     <TextBlock Text="CPU Usage" VerticalAlignment="Center" Opacity="0.8"/>
-                                                    <ui:ToggleSwitch Grid.Column="1" IsOn="{Binding Config.ShowCpu, Mode=TwoWay}" OnContent="" OffContent="" Margin="10,0,0,0" />
+                                                    <ui:ToggleSwitch Grid.Column="1" IsOn="{Binding Config.ShowCpuPercent, Mode=TwoWay}" OnContent="" OffContent="" Margin="10,0,0,0" />
+                                                </Grid>
+                                                <Grid Margin="0,0,0,12">
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="130" />
+                                                        <ColumnDefinition Width="Auto" />
+                                                    </Grid.ColumnDefinitions>
+                                                    <TextBlock Text="CPU Clock" VerticalAlignment="Center" Opacity="0.8"/>
+                                                    <ui:ToggleSwitch Grid.Column="1" IsOn="{Binding Config.ShowCpuClock, Mode=TwoWay}" OnContent="" OffContent="" Margin="10,0,0,0" />
+                                                </Grid>
+                                                <Grid Margin="0,0,0,12">
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="130" />
+                                                        <ColumnDefinition Width="Auto" />
+                                                    </Grid.ColumnDefinitions>
+                                                    <TextBlock Text="RAM Usage" VerticalAlignment="Center" Opacity="0.8"/>
+                                                    <ui:ToggleSwitch Grid.Column="1" IsOn="{Binding Config.ShowRamPercent, Mode=TwoWay}" OnContent="" OffContent="" Margin="10,0,0,0" />
                                                 </Grid>
                                                 <Grid>
                                                     <Grid.ColumnDefinitions>
                                                         <ColumnDefinition Width="130" />
                                                         <ColumnDefinition Width="Auto" />
                                                     </Grid.ColumnDefinitions>
-                                                    <TextBlock Text="RAM Usage" VerticalAlignment="Center" Opacity="0.8"/>
-                                                    <ui:ToggleSwitch Grid.Column="1" IsOn="{Binding Config.ShowRam, Mode=TwoWay}" OnContent="" OffContent="" Margin="10,0,0,0" />
+                                                    <TextBlock Text="RAM Used/Free" VerticalAlignment="Center" Opacity="0.8"/>
+                                                    <ui:ToggleSwitch Grid.Column="1" IsOn="{Binding Config.ShowRamUsedFreeGb, Mode=TwoWay}" OnContent="" OffContent="" Margin="10,0,0,0" />
                                                 </Grid>
                                             </StackPanel>
 
@@ -544,7 +560,9 @@
                                             <TextBlock Text="Display Modes" FontWeight="SemiBold" FontSize="13" Margin="0,0,0,8"/>
                                             <TextBlock Text="Each metric can render as text, graph, or both." FontSize="11" Opacity="0.75" Margin="0,0,0,10"/>
                                             <Grid Margin="0,0,0,10"><Grid.ColumnDefinitions><ColumnDefinition Width="100"/><ColumnDefinition Width="*"/><ColumnDefinition Width="8"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions><TextBlock Text="CPU" VerticalAlignment="Center"/><ComboBox Grid.Column="1" MinWidth="120" SelectedValue="{Binding Config.CpuDisplayMode, Mode=TwoWay}" SelectedValuePath="Content"><ComboBoxItem Content="Text"/><ComboBoxItem Content="Graph"/><ComboBoxItem Content="TextGraph"/></ComboBox><ComboBox Grid.Column="3" MinWidth="100" SelectedValue="{Binding Config.CpuGraphStyle, Mode=TwoWay}" SelectedValuePath="Content"><ComboBoxItem Content="Line"/><ComboBoxItem Content="Bar"/><ComboBoxItem Content="Pie"/></ComboBox></Grid>
+                                            <Grid Margin="0,0,0,10"><Grid.ColumnDefinitions><ColumnDefinition Width="100"/><ColumnDefinition Width="*"/><ColumnDefinition Width="8"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions><TextBlock Text="CPU Clock" VerticalAlignment="Center"/><ComboBox Grid.Column="1" MinWidth="120" SelectedValue="{Binding Config.CpuClockDisplayMode, Mode=TwoWay}" SelectedValuePath="Content"><ComboBoxItem Content="Text"/><ComboBoxItem Content="Graph"/><ComboBoxItem Content="TextGraph"/></ComboBox><ComboBox Grid.Column="3" MinWidth="100" SelectedValue="{Binding Config.CpuClockGraphStyle, Mode=TwoWay}" SelectedValuePath="Content"><ComboBoxItem Content="Line"/><ComboBoxItem Content="Bar"/><ComboBoxItem Content="Pie"/></ComboBox></Grid>
                                             <Grid Margin="0,0,0,10"><Grid.ColumnDefinitions><ColumnDefinition Width="100"/><ColumnDefinition Width="*"/><ColumnDefinition Width="8"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions><TextBlock Text="RAM" VerticalAlignment="Center"/><ComboBox Grid.Column="1" MinWidth="120" SelectedValue="{Binding Config.RamDisplayMode, Mode=TwoWay}" SelectedValuePath="Content"><ComboBoxItem Content="Text"/><ComboBoxItem Content="Graph"/><ComboBoxItem Content="TextGraph"/></ComboBox><ComboBox Grid.Column="3" MinWidth="100" SelectedValue="{Binding Config.RamGraphStyle, Mode=TwoWay}" SelectedValuePath="Content"><ComboBoxItem Content="Line"/><ComboBoxItem Content="Bar"/><ComboBoxItem Content="Pie"/></ComboBox></Grid>
+                                            <Grid Margin="0,0,0,10"><Grid.ColumnDefinitions><ColumnDefinition Width="100"/><ColumnDefinition Width="*"/><ColumnDefinition Width="8"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions><TextBlock Text="RAM Used/Free" VerticalAlignment="Center"/><ComboBox Grid.Column="1" MinWidth="120" SelectedValue="{Binding Config.RamUsedFreeDisplayMode, Mode=TwoWay}" SelectedValuePath="Content"><ComboBoxItem Content="Text"/><ComboBoxItem Content="Graph"/><ComboBoxItem Content="TextGraph"/></ComboBox><ComboBox Grid.Column="3" MinWidth="100" SelectedValue="{Binding Config.RamUsedFreeGraphStyle, Mode=TwoWay}" SelectedValuePath="Content"><ComboBoxItem Content="Line"/><ComboBoxItem Content="Bar"/><ComboBoxItem Content="Pie"/></ComboBox></Grid>
                                             <Grid Margin="0,0,0,10"><Grid.ColumnDefinitions><ColumnDefinition Width="100"/><ColumnDefinition Width="*"/><ColumnDefinition Width="8"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions><TextBlock Text="GPU" VerticalAlignment="Center"/><ComboBox Grid.Column="1" MinWidth="120" SelectedValue="{Binding Config.GpuDisplayMode, Mode=TwoWay}" SelectedValuePath="Content"><ComboBoxItem Content="Text"/><ComboBoxItem Content="Graph"/><ComboBoxItem Content="TextGraph"/></ComboBox><ComboBox Grid.Column="3" MinWidth="100" SelectedValue="{Binding Config.GpuGraphStyle, Mode=TwoWay}" SelectedValuePath="Content"><ComboBoxItem Content="Line"/><ComboBoxItem Content="Bar"/><ComboBoxItem Content="Pie"/></ComboBox></Grid>
                                             <Grid Margin="0,0,0,10"><Grid.ColumnDefinitions><ColumnDefinition Width="100"/><ColumnDefinition Width="*"/><ColumnDefinition Width="8"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions><TextBlock Text="Temperature" VerticalAlignment="Center"/><ComboBox Grid.Column="1" MinWidth="120" SelectedValue="{Binding Config.TempDisplayMode, Mode=TwoWay}" SelectedValuePath="Content"><ComboBoxItem Content="Text"/><ComboBoxItem Content="Graph"/><ComboBoxItem Content="TextGraph"/></ComboBox><ComboBox Grid.Column="3" MinWidth="100" SelectedValue="{Binding Config.TempGraphStyle, Mode=TwoWay}" SelectedValuePath="Content"><ComboBoxItem Content="Line"/><ComboBoxItem Content="Bar"/><ComboBoxItem Content="Pie"/></ComboBox></Grid>
                                             <Separator Margin="0,4,0,10"/>
