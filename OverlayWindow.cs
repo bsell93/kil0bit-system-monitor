@@ -74,6 +74,7 @@ namespace Kil0bitSystemMonitor
         public const int ICON_BIG = 1;
         public const int ICON_SMALL = 0;
         public const int WM_SHOW_SETTINGS = 0x0501;
+        private const int CenterSnapThresholdPx = 28;
         private const uint WM_APPBAR_CALLBACK = 0x0502;
         private const uint ABM_NEW = 0x00000000;
         private const uint ABM_REMOVE = 0x00000001;
@@ -266,7 +267,17 @@ namespace Kil0bitSystemMonitor
                 int h = tb.Bottom - tb.Top;
                 int oh = (int)(32 * _dpiScale * (float)_config.Config.ScaleFactor);
                 int cy = tb.Top + (h - oh) / 2;
-                SetWindowPos(_hWnd, IntPtr.Zero, (int)_config.Config.X, cy, 0, 0, 0x0001 | 0x0004 | 0x0010);
+                int cx = (int)_config.Config.X;
+                IntPtr monitor = MonitorFromWindow(_hWnd, 2);
+                MONITORINFO mi = new MONITORINFO { cbSize = (uint)Marshal.SizeOf(typeof(MONITORINFO)) };
+                if (monitor != IntPtr.Zero && GetMonitorInfo(monitor, ref mi) && Win32Helper.GetWindowRect(_hWnd, out Win32Helper.RECT wr))
+                {
+                    int windowWidth = Math.Max(1, wr.Right - wr.Left);
+                    cx = mi.rcMonitor.Left + ((mi.rcMonitor.Right - mi.rcMonitor.Left - windowWidth) / 2);
+                }
+
+                SetWindowPos(_hWnd, IntPtr.Zero, cx, cy, 0, 0, 0x0001 | 0x0004 | 0x0010);
+                _config.Config.X = cx;
                 _config.Config.Y = cy;
             }
         }
@@ -843,7 +854,34 @@ namespace Kil0bitSystemMonitor
             {
                 WINDOWPOS pos = Marshal.PtrToStructure<WINDOWPOS>(lParam);
                 IntPtr taskbar = Win32Helper.FindWindow("Shell_TrayWnd", "");
-                if (taskbar != IntPtr.Zero && Win32Helper.GetWindowRect(taskbar, out Win32Helper.RECT tb)) { int oh = (int)(32 * _dpiScale * (float)_config.Config.ScaleFactor); pos.y = tb.Top + (tb.Bottom - tb.Top - oh) / 2; Marshal.StructureToPtr(pos, lParam, false); }
+                if (taskbar != IntPtr.Zero && Win32Helper.GetWindowRect(taskbar, out Win32Helper.RECT tb))
+                {
+                    int oh = (int)(32 * _dpiScale * (float)_config.Config.ScaleFactor);
+                    pos.y = tb.Top + (tb.Bottom - tb.Top - oh) / 2;
+
+                    IntPtr monitor = MonitorFromWindow(_hWnd, 2);
+                    MONITORINFO mi = new MONITORINFO { cbSize = (uint)Marshal.SizeOf(typeof(MONITORINFO)) };
+                    if (monitor != IntPtr.Zero && GetMonitorInfo(monitor, ref mi))
+                    {
+                        int currentWidth = pos.cx;
+                        if (currentWidth <= 0 && Win32Helper.GetWindowRect(_hWnd, out Win32Helper.RECT wr))
+                        {
+                            currentWidth = wr.Right - wr.Left;
+                        }
+
+                        if (currentWidth > 0)
+                        {
+                            int centeredX = mi.rcMonitor.Left + ((mi.rcMonitor.Right - mi.rcMonitor.Left - currentWidth) / 2);
+                            int snapThreshold = (int)Math.Round(CenterSnapThresholdPx * _dpiScale);
+                            if (Math.Abs(pos.x - centeredX) <= snapThreshold)
+                            {
+                                pos.x = centeredX;
+                            }
+                        }
+                    }
+
+                    Marshal.StructureToPtr(pos, lParam, false);
+                }
             }
             if (msg == WM_WINDOWPOSCHANGED) { if (_appbarRegistered) { APPBARDATA abd = new APPBARDATA { cbSize = Marshal.SizeOf(typeof(APPBARDATA)), hWnd = _hWnd }; SHAppBarMessage(ABM_WINDOWPOSCHANGED, ref abd); } return IntPtr.Zero; }
             if (msg == WM_APPBAR_CALLBACK) { if ((uint)wParam.ToInt32() == ABN_FULLSCREENAPP) { _shellFullscreen = (lParam != IntPtr.Zero); _dispatcher.BeginInvoke(UpdateVisibility); } return IntPtr.Zero; }
