@@ -8,6 +8,8 @@ namespace Kil0bitSystemMonitor.Models
         public string Name { get; set; } = "";
         public float SpacePercent { get; set; }
         public float ActivityPercent { get; set; }
+        public float ReadKbps { get; set; }
+        public float WriteKbps { get; set; }
     }
 
     public class SystemMetrics
@@ -36,6 +38,8 @@ namespace Kil0bitSystemMonitor.Models
         private bool _showTemp = true;
         private bool _showDisk = true;
         private bool _showDiskSpeed = true;
+        private bool _showDiskIn = true;
+        private bool _showDiskOut = true;
         private bool _showNetUp = true;
         private bool _showNetDown = true;
         private string _networkAdapter = "Default";
@@ -65,6 +69,15 @@ namespace Kil0bitSystemMonitor.Models
         private int _graphOpacity = 36;
         private string _graphColorHex = "#00CCFF";
         private string _graphHistoryPreset = "Medium";
+        private string _inlineGraphStyle = "Line";
+        private string _cpuGraphStyle = "Line";
+        private string _ramGraphStyle = "Line";
+        private string _gpuGraphStyle = "Line";
+        private string _tempGraphStyle = "Line";
+        private string _netUpGraphStyle = "Line";
+        private string _netDownGraphStyle = "Line";
+        private string _diskSpaceGraphStyle = "Line";
+        private string _diskActivityGraphStyle = "Line";
         private string _cpuDisplayMode = "TextGraph";
         private string _ramDisplayMode = "TextGraph";
         private string _gpuDisplayMode = "TextGraph";
@@ -97,6 +110,8 @@ namespace Kil0bitSystemMonitor.Models
         public bool ShowTemp { get => _showTemp; set { _showTemp = value; OnPropertyChanged(); } }
         public bool ShowDisk { get => _showDisk; set { _showDisk = value; OnPropertyChanged(); } }
         public bool ShowDiskSpeed { get => _showDiskSpeed; set { _showDiskSpeed = value; OnPropertyChanged(); } }
+        public bool ShowDiskIn { get => _showDiskIn; set { _showDiskIn = value; OnPropertyChanged(); } }
+        public bool ShowDiskOut { get => _showDiskOut; set { _showDiskOut = value; OnPropertyChanged(); } }
         public bool ShowNetUp { get => _showNetUp; set { _showNetUp = value; OnPropertyChanged(); } }
         public bool ShowNetDown { get => _showNetDown; set { _showNetDown = value; OnPropertyChanged(); } }
 
@@ -124,6 +139,15 @@ namespace Kil0bitSystemMonitor.Models
         public int GraphOpacity { get => _graphOpacity; set { _graphOpacity = Math.Clamp(value, 8, 96); OnPropertyChanged(); } }
         public string GraphColorHex { get => _graphColorHex; set { _graphColorHex = value; OnPropertyChanged(); } }
         public string GraphHistoryPreset { get => _graphHistoryPreset; set { _graphHistoryPreset = value; OnPropertyChanged(); } }
+        public string InlineGraphStyle { get => _inlineGraphStyle; set { _inlineGraphStyle = value; OnPropertyChanged(); } }
+        public string CpuGraphStyle { get => _cpuGraphStyle; set { _cpuGraphStyle = value; OnPropertyChanged(); } }
+        public string RamGraphStyle { get => _ramGraphStyle; set { _ramGraphStyle = value; OnPropertyChanged(); } }
+        public string GpuGraphStyle { get => _gpuGraphStyle; set { _gpuGraphStyle = value; OnPropertyChanged(); } }
+        public string TempGraphStyle { get => _tempGraphStyle; set { _tempGraphStyle = value; OnPropertyChanged(); } }
+        public string NetUpGraphStyle { get => _netUpGraphStyle; set { _netUpGraphStyle = value; OnPropertyChanged(); } }
+        public string NetDownGraphStyle { get => _netDownGraphStyle; set { _netDownGraphStyle = value; OnPropertyChanged(); } }
+        public string DiskSpaceGraphStyle { get => _diskSpaceGraphStyle; set { _diskSpaceGraphStyle = value; OnPropertyChanged(); } }
+        public string DiskActivityGraphStyle { get => _diskActivityGraphStyle; set { _diskActivityGraphStyle = value; OnPropertyChanged(); } }
         public string CpuDisplayMode { get => _cpuDisplayMode; set { _cpuDisplayMode = value; OnPropertyChanged(); } }
         public string RamDisplayMode { get => _ramDisplayMode; set { _ramDisplayMode = value; OnPropertyChanged(); } }
         public string GpuDisplayMode { get => _gpuDisplayMode; set { _gpuDisplayMode = value; OnPropertyChanged(); } }

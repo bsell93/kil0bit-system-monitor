@@ -288,6 +288,7 @@ namespace Kil0bitSystemMonitor
             public string ThresholdKey { get; set; } = "";
             public float ThresholdValue { get; set; }
             public ThresholdSeverity Severity { get; set; } = ThresholdSeverity.Normal;
+            public InlineGraphStyle GraphStyle { get; set; } = InlineGraphStyle.Line;
         }
 
         private void UpdateLayer()
@@ -370,8 +371,16 @@ namespace Kil0bitSystemMonitor
 
                 if (colNeedsGraphLane)
                 {
-                    DrawInlineGraph(_offscreenGraphics, col.Top, new RectangleF(graphX, 3 * scale, graphLaneWidth, (h / 2f) - (4 * scale)));
-                    DrawInlineGraph(_offscreenGraphics, col.Bottom, new RectangleF(graphX, (h / 2f) + (1 * scale), graphLaneWidth, (h / 2f) - (4 * scale)));
+                    if (col.Top != null && col.Bottom != null)
+                    {
+                        DrawInlineGraph(_offscreenGraphics, col.Top, new RectangleF(graphX, 3 * scale, graphLaneWidth, (h / 2f) - (4 * scale)));
+                        DrawInlineGraph(_offscreenGraphics, col.Bottom, new RectangleF(graphX, (h / 2f) + (1 * scale), graphLaneWidth, (h / 2f) - (4 * scale)));
+                    }
+                    else
+                    {
+                        var singleItem = col.Top ?? col.Bottom;
+                        DrawInlineGraph(_offscreenGraphics, singleItem, new RectangleF(graphX, 3 * scale, graphLaneWidth, h - (6 * scale)));
+                    }
                 }
 
                 float y1 = (h / 2f) - font.Height + (1f * scale);
@@ -402,9 +411,51 @@ namespace Kil0bitSystemMonitor
 
         private string FormatDiskSpeed(float kbps)
         {
-            if (kbps >= 1024 * 1024) return $"{(kbps / 1024f / 1024f):F1} GB/s";
-            if (kbps >= 1024f) return $"{(kbps / 1024f):F1} MB/s";
-            return $"{kbps:F0} KB/s";
+            float bytesPerSecond = Math.Max(0f, kbps) * 1024f;
+            string[] units = { "B/s", "KB/s", "MB/s", "GB/s", "TB/s" };
+            int unitIndex = 0;
+
+            while (bytesPerSecond >= 1024f && unitIndex < units.Length - 1)
+            {
+                bytesPerSecond /= 1024f;
+                unitIndex++;
+            }
+
+            string value = bytesPerSecond >= 100f
+                ? $"{bytesPerSecond:F0}"
+                : bytesPerSecond >= 10f
+                    ? $"{bytesPerSecond:F1}"
+                    : $"{bytesPerSecond:F2}";
+
+            return $"{value} {units[unitIndex]}";
+        }
+
+        private static string GetDriveLabel(string diskName)
+        {
+            if (string.IsNullOrWhiteSpace(diskName))
+            {
+                return "DISK";
+            }
+
+            int colonIdx = diskName.IndexOf(':');
+            if (colonIdx > 0)
+            {
+                char driveLetter = diskName[colonIdx - 1];
+                if (char.IsLetter(driveLetter))
+                {
+                    return $"{char.ToUpperInvariant(driveLetter)}:/";
+                }
+            }
+
+            foreach (char ch in diskName)
+            {
+                if (char.IsLetter(ch))
+                {
+                    return $"{char.ToUpperInvariant(ch)}:/";
+                }
+            }
+
+            return "DISK";
         }
 
         private System.Collections.Generic.List<(MetricItem? Top, MetricItem? Bottom)> PrepareMetricsData()
@@ -412,40 +463,84 @@ namespace Kil0bitSystemMonitor
             bool compact = (_config.Config.DisplayStyle ?? "Text") == "Compact";
             var m = _viewModel.Metrics; var c = _config.Config;
             
-            MetricItem Pct(string key, string mode, string f, string cp, string v, float value) => BuildMetricItem(key, mode, compact ? cp : f, v, "100%", value, GraphMode.Percent, 100f, ThresholdMode.Percent, key);
-            MetricItem Temp(string key, string mode, string f, string cp, string v, float value) => BuildMetricItem(key, mode, compact ? cp : f, v, "100°", value, GraphMode.Dynamic, 40f, ThresholdMode.Temperature, key);
-            MetricItem Net(string key, string mode, string f, string cp, string v, float value) => BuildMetricItem(key, mode, compact ? cp : f, v, "999 KB/s", value, GraphMode.Dynamic, 512f, ThresholdMode.None, key);
+            MetricItem Pct(string key, string mode, string graphStyle, string f, string cp, string v, float value) => BuildMetricItem(key, mode, graphStyle, compact ? cp : f, v, "100%", value, GraphMode.Percent, 100f, ThresholdMode.Percent, key);
+            MetricItem Temp(string key, string mode, string graphStyle, string f, string cp, string v, float value) => BuildMetricItem(key, mode, graphStyle, compact ? cp : f, v, "100°", value, GraphMode.Dynamic, 40f, ThresholdMode.Temperature, key);
+            MetricItem Net(string key, string mode, string graphStyle, string f, string cp, string v, float value) => BuildMetricItem(key, mode, graphStyle, compact ? cp : f, v, "999 KB/s", value, GraphMode.Dynamic, 512f, ThresholdMode.None, key);
+            MetricItem DiskIo(string key, string mode, string graphStyle, string f, string cp, string v, float value) => BuildMetricItem(key, mode, graphStyle, compact ? cp : f, v, "999 MB/s", value, GraphMode.Dynamic, 512f, ThresholdMode.None, key);
 
             var list = new System.Collections.Generic.List<(MetricItem?, MetricItem?)>();
             
             if (c.ShowNetUp || c.ShowNetDown) 
-                list.Add((c.ShowNetUp ? Net("net.up", c.NetUpDisplayMode, "UP ", "U", m.NetUpText, m.NetUpKbps) : null, c.ShowNetDown ? Net("net.down", c.NetDownDisplayMode, "DN ", "D", m.NetDownText, m.NetDownKbps) : null));
+                list.Add((c.ShowNetUp ? Net("net.up", c.NetUpDisplayMode, c.NetUpGraphStyle, "UP ", "U", m.NetUpText, m.NetUpKbps) : null, c.ShowNetDown ? Net("net.down", c.NetDownDisplayMode, c.NetDownGraphStyle, "DN ", "D", m.NetDownText, m.NetDownKbps) : null));
             
             if (c.ShowCpu || c.ShowRam) 
-                list.Add((c.ShowCpu ? Pct("cpu", c.CpuDisplayMode, "CPU", "C", $"{(int)m.CpuUsage}%", m.CpuUsage) : null, c.ShowRam ? Pct("ram", c.RamDisplayMode, "RAM", "R", $"{(int)m.RamPercent}%", m.RamPercent) : null));
+                list.Add((c.ShowCpu ? Pct("cpu", c.CpuDisplayMode, c.CpuGraphStyle, "CPU", "C", $"{(int)m.CpuUsage}%", m.CpuUsage) : null, c.ShowRam ? Pct("ram", c.RamDisplayMode, c.RamGraphStyle, "RAM", "R", $"{(int)m.RamPercent}%", m.RamPercent) : null));
             
             string tempStr = m.GpuTemperature > 0 ? $"{(int)m.GpuTemperature}°" : "N/A";
             if (c.ShowGpu || c.ShowTemp) 
-                list.Add((c.ShowGpu ? Pct("gpu", c.GpuDisplayMode, "GPU", "G", $"{(int)m.GpuUsage}%", m.GpuUsage) : null, c.ShowTemp ? Temp("gpu.temp", c.TempDisplayMode, "TMP", "T", tempStr, m.GpuTemperature) : null));
+                list.Add((c.ShowGpu ? Pct("gpu", c.GpuDisplayMode, c.GpuGraphStyle, "GPU", "G", $"{(int)m.GpuUsage}%", m.GpuUsage) : null, c.ShowTemp ? Temp("gpu.temp", c.TempDisplayMode, c.TempGraphStyle, "TMP", "T", tempStr, m.GpuTemperature) : null));
             
-            if (c.ShowDisk || c.ShowDiskSpeed)
+            if (c.ShowDisk || c.ShowDiskSpeed || c.ShowDiskIn || c.ShowDiskOut)
             {
                 if (m.Disks != null && m.Disks.Count > 0)
                 {
                     foreach (var d in m.Disks)
                     {
-                        // Clean name: "0 C: D:" -> "C"
-                        string letter = d.Name;
-                        int colonIdx = letter.IndexOf(':');
-                        if (colonIdx > 0) letter = letter.Substring(colonIdx - 1, 1);
-                        else if (letter.Length > 0) letter = letter.Substring(0, 1);
-                        
-                        string cdkLabel = letter.ToUpper() + "DK";
+                        string driveLabel = GetDriveLabel(d.Name);
+                        string graphSafeDriveId = driveLabel.Replace(":/", "", StringComparison.Ordinal);
 
-                        list.Add((
-                            c.ShowDisk ? Pct($"disk.{letter}.space", c.DiskSpaceDisplayMode, cdkLabel, letter, $"{(int)d.SpacePercent}%", d.SpacePercent) : null,
-                            c.ShowDiskSpeed ? Pct($"disk.{letter}.activity", c.DiskActivityDisplayMode, "SPD", "S", $"{(int)d.ActivityPercent}%", d.ActivityPercent) : null
-                        ));
+                        MetricItem? diskSpaceItem = c.ShowDisk
+                            ? Pct(
+                                $"disk.{graphSafeDriveId}.space",
+                                c.DiskSpaceDisplayMode,
+                                c.DiskSpaceGraphStyle,
+                                driveLabel,
+                                driveLabel,
+                                $"{(int)d.SpacePercent}%",
+                                d.SpacePercent)
+                            : null;
+
+                        MetricItem? diskSpeedItem = c.ShowDiskSpeed
+                            ? Pct(
+                                $"disk.{graphSafeDriveId}.activity",
+                                c.DiskActivityDisplayMode,
+                                c.DiskActivityGraphStyle,
+                                "SPD",
+                                "S",
+                                $"{(int)d.ActivityPercent}%",
+                                d.ActivityPercent)
+                            : null;
+
+                        if (diskSpaceItem != null || diskSpeedItem != null)
+                        {
+                            list.Add((diskSpaceItem, diskSpeedItem));
+                        }
+
+                        if (c.ShowDiskIn || c.ShowDiskOut)
+                        {
+                            list.Add((
+                                c.ShowDiskIn
+                                    ? DiskIo(
+                                        $"disk.{graphSafeDriveId}.in",
+                                        c.DiskActivityDisplayMode,
+                                        c.DiskActivityGraphStyle,
+                                        $"{driveLabel} IN",
+                                        $"{graphSafeDriveId}I",
+                                        FormatDiskSpeed(d.ReadKbps),
+                                        d.ReadKbps)
+                                    : null,
+                                c.ShowDiskOut
+                                    ? DiskIo(
+                                        $"disk.{graphSafeDriveId}.out",
+                                        c.DiskActivityDisplayMode,
+                                        c.DiskActivityGraphStyle,
+                                        $"{driveLabel} OUT",
+                                        $"{graphSafeDriveId}O",
+                                        FormatDiskSpeed(d.WriteKbps),
+                                        d.WriteKbps)
+                                    : null
+                            ));
+                        }
                     }
                 }
             }
@@ -517,23 +612,20 @@ namespace Kil0bitSystemMonitor
                 : MetricGraphNormalizer.NormalizeSeries(raw, item.GraphFloor);
 
             var graphBaseColor = GetColorForSeverity(item.Severity, HexToColor(_config.Config.GraphColorHex ?? "#00CCFF"));
-            using var linePen = new Pen(Color.FromArgb(Math.Clamp(_config.Config.GraphOpacity + 72, 24, 180), graphBaseColor), 1.2f);
-            using var fillBrush = new SolidBrush(Color.FromArgb(Math.Clamp(_config.Config.GraphOpacity, 8, 96), graphBaseColor));
+            var style = item.GraphStyle;
 
-            PointF[] points = BuildGraphPoints(normalized, bounds);
-            if (points.Length < 2)
+            switch (style)
             {
-                return;
+                case InlineGraphStyle.Bar:
+                    DrawBarGraph(graphics, normalized, bounds, graphBaseColor);
+                    break;
+                case InlineGraphStyle.Pie:
+                    DrawPieGraph(graphics, normalized, bounds, graphBaseColor);
+                    break;
+                default:
+                    DrawLineGraph(graphics, normalized, bounds, graphBaseColor);
+                    break;
             }
-
-            using var areaPath = new GraphicsPath();
-            areaPath.AddLines(points);
-            areaPath.AddLine(points[^1].X, points[^1].Y, bounds.Right, bounds.Bottom);
-            areaPath.AddLine(bounds.Right, bounds.Bottom, bounds.Left, bounds.Bottom);
-            areaPath.CloseFigure();
-
-            graphics.FillPath(fillBrush, areaPath);
-            graphics.DrawLines(linePen, points);
         }
 
         private static PointF[] BuildGraphPoints(float[] values, RectangleF bounds)
@@ -557,9 +649,70 @@ namespace Kil0bitSystemMonitor
             return points;
         }
 
+        private void DrawLineGraph(Graphics graphics, float[] normalized, RectangleF bounds, Color graphBaseColor)
+        {
+            using var linePen = new Pen(Color.FromArgb(Math.Clamp(_config.Config.GraphOpacity + 72, 24, 180), graphBaseColor), 1.2f);
+            using var fillBrush = new SolidBrush(Color.FromArgb(Math.Clamp(_config.Config.GraphOpacity, 8, 96), graphBaseColor));
+            PointF[] points = BuildGraphPoints(normalized, bounds);
+            if (points.Length < 2)
+            {
+                return;
+            }
+
+            using var areaPath = new GraphicsPath();
+            areaPath.AddLines(points);
+            areaPath.AddLine(points[^1].X, points[^1].Y, bounds.Right, bounds.Bottom);
+            areaPath.AddLine(bounds.Right, bounds.Bottom, bounds.Left, bounds.Bottom);
+            areaPath.CloseFigure();
+
+            graphics.FillPath(fillBrush, areaPath);
+            graphics.DrawLines(linePen, points);
+        }
+
+        private void DrawBarGraph(Graphics graphics, float[] normalized, RectangleF bounds, Color graphBaseColor)
+        {
+            int bars = Math.Min(normalized.Length, 18);
+            if (bars < 1)
+            {
+                return;
+            }
+
+            float barWidth = bounds.Width / bars;
+            int start = normalized.Length - bars;
+            using var barBrush = new SolidBrush(Color.FromArgb(Math.Clamp(_config.Config.GraphOpacity + 36, 16, 190), graphBaseColor));
+
+            for (int i = 0; i < bars; i++)
+            {
+                float v = Math.Clamp(normalized[start + i], 0f, 100f) / 100f;
+                float h = Math.Max(1f, bounds.Height * v);
+                float x = bounds.Left + (i * barWidth);
+                float y = bounds.Bottom - h;
+                graphics.FillRectangle(barBrush, x, y, Math.Max(1f, barWidth - 1f), h);
+            }
+        }
+
+        private void DrawPieGraph(Graphics graphics, float[] normalized, RectangleF bounds, Color graphBaseColor)
+        {
+            float latest = Math.Clamp(normalized[^1], 0f, 100f);
+            float diameter = Math.Max(4f, Math.Min(bounds.Width, bounds.Height) - 1f);
+            float x = bounds.Left + (bounds.Width - diameter) / 2f;
+            float y = bounds.Top + (bounds.Height - diameter) / 2f;
+            var pieBounds = new RectangleF(x, y, diameter, diameter);
+
+            using var baseBrush = new SolidBrush(Color.FromArgb(Math.Clamp(_config.Config.GraphOpacity / 2, 8, 72), graphBaseColor));
+            using var valueBrush = new SolidBrush(Color.FromArgb(Math.Clamp(_config.Config.GraphOpacity + 72, 24, 190), graphBaseColor));
+            using var outlinePen = new Pen(Color.FromArgb(Math.Clamp(_config.Config.GraphOpacity + 96, 32, 220), graphBaseColor), 1f);
+
+            graphics.FillEllipse(baseBrush, pieBounds);
+            float sweep = 360f * (latest / 100f);
+            graphics.FillPie(valueBrush, pieBounds.X, pieBounds.Y, pieBounds.Width, pieBounds.Height, -90f, sweep);
+            graphics.DrawEllipse(outlinePen, pieBounds);
+        }
+
         private MetricItem BuildMetricItem(
             string key,
             string mode,
+            string graphStyle,
             string label,
             string valueText,
             string reserve,
@@ -581,6 +734,7 @@ namespace Kil0bitSystemMonitor
                 ThresholdMode = thresholdMode,
                 ThresholdKey = thresholdKey,
                 ThresholdValue = value,
+                GraphStyle = MetricVisualPolicy.ParseInlineGraphStyle(string.IsNullOrWhiteSpace(graphStyle) ? _config.Config.InlineGraphStyle : graphStyle),
                 DisplayMode = _config.Config.EnableInlineGraphs
                     ? MetricVisualPolicy.ParseDisplayMode(mode)
                     : MetricDisplayMode.Text

@@ -1,3 +1,4 @@
+using System;
 using Kil0bitSystemMonitor.Models;
 
 namespace Kil0bitSystemMonitor.Helpers;
@@ -7,6 +8,13 @@ public enum MetricDisplayMode
     Text,
     Graph,
     TextGraph
+}
+
+public enum InlineGraphStyle
+{
+    Line,
+    Bar,
+    Pie
 }
 
 public enum ThresholdSeverity
@@ -37,6 +45,21 @@ public static class MetricVisualPolicy
             "Graph" => MetricDisplayMode.Graph,
             _ => MetricDisplayMode.TextGraph
         };
+    }
+
+    public static InlineGraphStyle ParseInlineGraphStyle(string? style)
+    {
+        if (string.Equals(style, "Bar", StringComparison.OrdinalIgnoreCase))
+        {
+            return InlineGraphStyle.Bar;
+        }
+
+        if (string.Equals(style, "Pie", StringComparison.OrdinalIgnoreCase))
+        {
+            return InlineGraphStyle.Pie;
+        }
+
+        return InlineGraphStyle.Line;
     }
 
     public static (int Warn, int Critical) ResolvePercentThresholds(AppConfig config, string metricKey)

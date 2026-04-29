@@ -279,6 +279,15 @@ namespace Kil0bitSystemMonitor
             c.GraphOpacity = 36;
             c.GraphColorHex = "#00CCFF";
             c.GraphHistoryPreset = "Medium";
+            c.InlineGraphStyle = "Line";
+            c.CpuGraphStyle = "Line";
+            c.RamGraphStyle = "Line";
+            c.GpuGraphStyle = "Line";
+            c.TempGraphStyle = "Line";
+            c.NetUpGraphStyle = "Line";
+            c.NetDownGraphStyle = "Line";
+            c.DiskSpaceGraphStyle = "Line";
+            c.DiskActivityGraphStyle = "Line";
             c.CpuDisplayMode = "TextGraph";
             c.RamDisplayMode = "TextGraph";
             c.GpuDisplayMode = "TextGraph";
@@ -328,6 +337,8 @@ namespace Kil0bitSystemMonitor
             c.ShowTemp = true;
             c.ShowDisk = true;
             c.ShowDiskSpeed = true;
+            c.ShowDiskIn = true;
+            c.ShowDiskOut = true;
             c.ShowNetUp = true;
             c.ShowNetDown = true;
             
@@ -350,6 +361,15 @@ namespace Kil0bitSystemMonitor
             c.GraphOpacity = 36;
             c.GraphColorHex = "#00CCFF";
             c.GraphHistoryPreset = "Medium";
+            c.InlineGraphStyle = "Line";
+            c.CpuGraphStyle = "Line";
+            c.RamGraphStyle = "Line";
+            c.GpuGraphStyle = "Line";
+            c.TempGraphStyle = "Line";
+            c.NetUpGraphStyle = "Line";
+            c.NetDownGraphStyle = "Line";
+            c.DiskSpaceGraphStyle = "Line";
+            c.DiskActivityGraphStyle = "Line";
             c.CpuDisplayMode = "TextGraph";
             c.RamDisplayMode = "TextGraph";
             c.GpuDisplayMode = "TextGraph";

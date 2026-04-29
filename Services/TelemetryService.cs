@@ -475,6 +475,8 @@ namespace Kil0bitSystemMonitor.Services
             {
                 try {
                     float activity = entry.Value.Usage.NextValue();
+                    float readKbps = Math.Max(0f, entry.Value.Read.NextValue() / 1024f);
+                    float writeKbps = Math.Max(0f, entry.Value.Write.NextValue() / 1024f);
                     
                     float spacePct = 0;
                     try {
@@ -495,7 +497,9 @@ namespace Kil0bitSystemMonitor.Services
                     metrics.Disks.Add(new DiskMetric {
                         Name = entry.Key,
                         SpacePercent = spacePct,
-                        ActivityPercent = Math.Min(100f, activity)
+                        ActivityPercent = Math.Min(100f, activity),
+                        ReadKbps = readKbps,
+                        WriteKbps = writeKbps
                     });
 
                     maxActivity = Math.Max(maxActivity, activity);
