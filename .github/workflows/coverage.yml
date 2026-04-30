@@ -35,21 +35,18 @@ jobs:
 
       - name: Generate coverage summary
         run: |
-          reportgenerator "-reports:coverage.cobertura.xml" "-targetdir:coveragereport" "-reporttypes:MarkdownSummaryGithub;TextSummary" "-assemblyfilters:+Kil0bitSystemMonitor;-Kil0bitSystemMonitor.Tests"
+          reportgenerator "-reports:coverage.cobertura.xml" "-targetdir:coveragereport" "-reporttypes:MarkdownSummaryGithub;Cobertura" "-assemblyfilters:+Kil0bitSystemMonitor;-Kil0bitSystemMonitor.Tests"
           cat coveragereport/SummaryGithub.md >> "$GITHUB_STEP_SUMMARY"
 
       - name: Generate coverage badge payload
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         run: |
           line_rate=$(python3 - <<'PY'
-          import pathlib
-          import re
+          import xml.etree.ElementTree as ET
 
-          summary_text = pathlib.Path("coveragereport/Summary.txt").read_text(encoding="utf-8")
-          match = re.search(r"Line coverage:\s*([0-9]+(?:\.[0-9]+)?)%", summary_text)
-          if not match:
-              raise SystemExit("Unable to parse line coverage from coveragereport/Summary.txt")
-          print(f"{float(match.group(1)):.2f}")
+          root = ET.parse("coveragereport/Cobertura.xml").getroot()
+          line_rate = float(root.attrib.get("line-rate", "0"))
+          print(f"{line_rate * 100:.2f}")
           PY
           )
 
