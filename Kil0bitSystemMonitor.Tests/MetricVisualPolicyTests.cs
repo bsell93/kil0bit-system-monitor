@@ -90,4 +90,40 @@ public class MetricVisualPolicyTests
 
         Assert.Equal((61, 83), resolved);
     }
+
+    [Fact]
+    public void ResolvePercentThresholds_UsesCpuOverridesForCpuDerivedMetricKeys()
+    {
+        var config = new AppConfig
+        {
+            CpuWarnThresholdOverrideValue = 67,
+            CpuCriticalThresholdOverrideValue = 87,
+            CpuWarnThreshold = 67,
+            CpuCriticalThreshold = 87,
+            PercentWarnThreshold = 75,
+            PercentCriticalThreshold = 90
+        };
+
+        var resolved = MetricVisualPolicy.ResolvePercentThresholds(config, "cpu.clock");
+
+        Assert.Equal((67, 87), resolved);
+    }
+
+    [Fact]
+    public void ResolvePercentThresholds_UsesRamOverridesForRamDerivedMetricKeys()
+    {
+        var config = new AppConfig
+        {
+            RamWarnThresholdOverrideValue = 68,
+            RamCriticalThresholdOverrideValue = 88,
+            RamWarnThreshold = 68,
+            RamCriticalThreshold = 88,
+            PercentWarnThreshold = 75,
+            PercentCriticalThreshold = 90
+        };
+
+        var resolved = MetricVisualPolicy.ResolvePercentThresholds(config, "ram.usedfree");
+
+        Assert.Equal((68, 88), resolved);
+    }
 }

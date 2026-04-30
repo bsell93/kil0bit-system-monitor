@@ -3,7 +3,9 @@ namespace Kil0bitSystemMonitor.Models;
 public class AppConfig
 {
     public bool ShowCpuPercent { get; set; } = true;
+    public bool ShowCpuClock { get; set; } = true;
     public bool ShowRamPercent { get; set; } = true;
+    public bool ShowRamUsedFreeGb { get; set; } = true;
     public string CpuDisplayMode => CpuDisplayModeOverride ?? GlobalDisplayMode;
     public string CpuGraphStyle => CpuGraphStyleOverride ?? GlobalGraphStyle;
     public string GlobalDisplayMode { get; set; } = "TextGraph";
@@ -46,34 +48,28 @@ public class AppConfig
     public string? DiskAccentColorHexOverride { get; set; }
     public string? DiskLabelColorHexOverride { get; set; }
     public string? DiskGraphColorHexOverride { get; set; }
-    public bool CpuThresholdOverrideEnabled { get; set; }
     public int CpuWarnThreshold { get; set; }
     public int CpuCriticalThreshold { get; set; }
     public int? CpuWarnThresholdOverrideValue { get; set; }
     public int? CpuCriticalThresholdOverrideValue { get; set; }
-    public bool RamThresholdOverrideEnabled { get; set; }
     public int RamWarnThreshold { get; set; }
     public int RamCriticalThreshold { get; set; }
     public int? RamWarnThresholdOverrideValue { get; set; }
     public int? RamCriticalThresholdOverrideValue { get; set; }
-    public bool GpuThresholdOverrideEnabled { get; set; }
     public int GpuWarnThreshold { get; set; }
     public int GpuCriticalThreshold { get; set; }
     public int? GpuWarnThresholdOverrideValue { get; set; }
     public int? GpuCriticalThresholdOverrideValue { get; set; }
-    public bool NetworkThresholdOverrideEnabled { get; set; }
     public int NetworkWarnThreshold { get; set; }
     public int NetworkCriticalThreshold { get; set; }
     public int? NetworkWarnThresholdOverrideValue { get; set; }
     public int? NetworkCriticalThresholdOverrideValue { get; set; }
-    public bool DiskThresholdOverrideEnabled { get; set; }
     public int DiskWarnThreshold { get; set; }
     public int DiskCriticalThreshold { get; set; }
     public int? DiskWarnThresholdOverrideValue { get; set; }
     public int? DiskCriticalThresholdOverrideValue { get; set; }
     public int PercentWarnThreshold { get; set; }
     public int PercentCriticalThreshold { get; set; }
-    public bool TempThresholdOverrideEnabled { get; set; }
     public int TempWarnThresholdOverride { get; set; }
     public int TempCriticalThresholdOverride { get; set; }
     public int? TempWarnThresholdOverrideValue { get; set; }

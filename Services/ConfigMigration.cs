@@ -21,11 +21,13 @@ namespace Kil0bitSystemMonitor.Services
                 if (TryReadBoolean(root, "ShowCpu", out bool showCpu))
                 {
                     config.ShowCpuPercent = showCpu;
+                    config.ShowCpuClock = showCpu;
                 }
 
                 if (TryReadBoolean(root, "ShowRam", out bool showRam))
                 {
                     config.ShowRamPercent = showRam;
+                    config.ShowRamUsedFreeGb = showRam;
                 }
 
                 string? globalDisplayMode = ReadString(root, "GlobalDisplayMode");
@@ -159,71 +161,25 @@ namespace Kil0bitSystemMonitor.Services
 
         private static void MigrateThresholdOverrides(JsonElement root, AppConfig config)
         {
-            if (TryReadBoolean(root, "CpuThresholdOverrideEnabled", out bool cpuEnabled) && cpuEnabled)
-            {
-                config.CpuWarnThresholdOverrideValue = ReadInt(root, "CpuWarnThreshold");
-                config.CpuCriticalThresholdOverrideValue = ReadInt(root, "CpuCriticalThreshold");
-            }
-            else
-            {
-                config.CpuWarnThresholdOverrideValue = null;
-                config.CpuCriticalThresholdOverrideValue = null;
-            }
+            config.CpuWarnThresholdOverrideValue = ReadInt(root, "CpuWarnThreshold");
+            config.CpuCriticalThresholdOverrideValue = ReadInt(root, "CpuCriticalThreshold");
 
-            if (TryReadBoolean(root, "RamThresholdOverrideEnabled", out bool ramEnabled) && ramEnabled)
-            {
-                config.RamWarnThresholdOverrideValue = ReadInt(root, "RamWarnThreshold");
-                config.RamCriticalThresholdOverrideValue = ReadInt(root, "RamCriticalThreshold");
-            }
-            else
-            {
-                config.RamWarnThresholdOverrideValue = null;
-                config.RamCriticalThresholdOverrideValue = null;
-            }
+            config.RamWarnThresholdOverrideValue = ReadInt(root, "RamWarnThreshold");
+            config.RamCriticalThresholdOverrideValue = ReadInt(root, "RamCriticalThreshold");
 
-            if (TryReadBoolean(root, "GpuThresholdOverrideEnabled", out bool gpuEnabled) && gpuEnabled)
-            {
-                config.GpuWarnThresholdOverrideValue = ReadInt(root, "GpuWarnThreshold");
-                config.GpuCriticalThresholdOverrideValue = ReadInt(root, "GpuCriticalThreshold");
-            }
-            else
-            {
-                config.GpuWarnThresholdOverrideValue = null;
-                config.GpuCriticalThresholdOverrideValue = null;
-            }
+            config.GpuWarnThresholdOverrideValue = ReadInt(root, "GpuWarnThreshold");
+            config.GpuCriticalThresholdOverrideValue = ReadInt(root, "GpuCriticalThreshold");
 
-            if (TryReadBoolean(root, "NetworkThresholdOverrideEnabled", out bool networkEnabled) && networkEnabled)
-            {
-                config.NetworkWarnThresholdOverrideValue = ReadInt(root, "NetworkWarnThreshold");
-                config.NetworkCriticalThresholdOverrideValue = ReadInt(root, "NetworkCriticalThreshold");
-            }
-            else
-            {
-                config.NetworkWarnThresholdOverrideValue = null;
-                config.NetworkCriticalThresholdOverrideValue = null;
-            }
+            config.NetworkWarnThresholdOverrideValue = ReadInt(root, "NetworkWarnThreshold");
+            config.NetworkCriticalThresholdOverrideValue = ReadInt(root, "NetworkCriticalThreshold");
 
-            if (TryReadBoolean(root, "DiskThresholdOverrideEnabled", out bool diskEnabled) && diskEnabled)
-            {
-                config.DiskWarnThresholdOverrideValue = ReadInt(root, "DiskWarnThreshold");
-                config.DiskCriticalThresholdOverrideValue = ReadInt(root, "DiskCriticalThreshold");
-            }
-            else
-            {
-                config.DiskWarnThresholdOverrideValue = null;
-                config.DiskCriticalThresholdOverrideValue = null;
-            }
+            config.DiskWarnThresholdOverrideValue = ReadInt(root, "DiskWarnThreshold");
+            config.DiskCriticalThresholdOverrideValue = ReadInt(root, "DiskCriticalThreshold");
 
-            if (TryReadBoolean(root, "TempThresholdOverrideEnabled", out bool tempEnabled) && tempEnabled)
-            {
-                config.TempWarnThresholdOverride = ReadInt(root, "TempWarnThresholdOverride") ?? config.TempWarnThreshold;
-                config.TempCriticalThresholdOverride = ReadInt(root, "TempCriticalThresholdOverride") ?? config.TempCriticalThreshold;
-            }
-            else
-            {
-                config.TempWarnThresholdOverrideValue = null;
-                config.TempCriticalThresholdOverrideValue = null;
-            }
+            config.TempWarnThresholdOverrideValue =
+                ReadInt(root, "TempWarnThresholdOverride") ?? ReadInt(root, "TempWarnThreshold");
+            config.TempCriticalThresholdOverrideValue =
+                ReadInt(root, "TempCriticalThresholdOverride") ?? ReadInt(root, "TempCriticalThreshold");
         }
 
         private static bool TryReadBoolean(JsonElement root, string propertyName, out bool value)

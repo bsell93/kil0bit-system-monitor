@@ -125,19 +125,14 @@ namespace Kil0bitSystemMonitor.Models
         private int _tempWarnThreshold = 72;
         private int _tempCriticalThreshold = 84;
         private string _thresholdProfile = "Balanced";
-        private bool _cpuThresholdOverrideEnabled = false;
         private int? _cpuWarnThresholdOverride;
         private int? _cpuCriticalThresholdOverride;
-        private bool _ramThresholdOverrideEnabled = false;
         private int? _ramWarnThresholdOverride;
         private int? _ramCriticalThresholdOverride;
-        private bool _gpuThresholdOverrideEnabled = false;
         private int? _gpuWarnThresholdOverride;
         private int? _gpuCriticalThresholdOverride;
-        private bool _networkThresholdOverrideEnabled = false;
         private int? _networkWarnThresholdOverride;
         private int? _networkCriticalThresholdOverride;
-        private bool _diskThresholdOverrideEnabled = false;
         private int? _diskWarnThresholdOverride;
         private int? _diskCriticalThresholdOverride;
         private double _cpuGroupPadLeft;
@@ -155,7 +150,6 @@ namespace Kil0bitSystemMonitor.Models
         private double _diskGroupPadLeft;
         private double _diskGroupPadBetween;
         private double _diskGroupPadRight;
-        private bool _tempThresholdOverrideEnabled = false;
         private int? _tempWarnThresholdOverride;
         private int? _tempCriticalThresholdOverride;
         private string _warningColorHex = "#FFF59D00";
@@ -252,19 +246,14 @@ namespace Kil0bitSystemMonitor.Models
         public int TempWarnThreshold { get => _tempWarnThreshold; set { _tempWarnThreshold = Math.Clamp(value, 20, 120); OnPropertyChanged(); if (!_tempWarnThresholdOverride.HasValue) OnPropertyChanged(nameof(TempWarnThresholdOverride)); } }
         public int TempCriticalThreshold { get => _tempCriticalThreshold; set { _tempCriticalThreshold = Math.Clamp(value, 20, 120); OnPropertyChanged(); if (!_tempCriticalThresholdOverride.HasValue) OnPropertyChanged(nameof(TempCriticalThresholdOverride)); } }
         public string ThresholdProfile { get => _thresholdProfile; set { _thresholdProfile = value; OnPropertyChanged(); } }
-        public bool CpuThresholdOverrideEnabled { get => _cpuThresholdOverrideEnabled; set { _cpuThresholdOverrideEnabled = value; OnPropertyChanged(); } }
         public int CpuWarnThreshold { get => _cpuWarnThresholdOverride ?? PercentWarnThreshold; set { _cpuWarnThresholdOverride = Math.Clamp(value, 1, 99); OnPropertyChanged(); } }
         public int CpuCriticalThreshold { get => _cpuCriticalThresholdOverride ?? PercentCriticalThreshold; set { _cpuCriticalThresholdOverride = Math.Clamp(value, 1, 99); OnPropertyChanged(); } }
-        public bool RamThresholdOverrideEnabled { get => _ramThresholdOverrideEnabled; set { _ramThresholdOverrideEnabled = value; OnPropertyChanged(); } }
         public int RamWarnThreshold { get => _ramWarnThresholdOverride ?? PercentWarnThreshold; set { _ramWarnThresholdOverride = Math.Clamp(value, 1, 99); OnPropertyChanged(); } }
         public int RamCriticalThreshold { get => _ramCriticalThresholdOverride ?? PercentCriticalThreshold; set { _ramCriticalThresholdOverride = Math.Clamp(value, 1, 99); OnPropertyChanged(); } }
-        public bool GpuThresholdOverrideEnabled { get => _gpuThresholdOverrideEnabled; set { _gpuThresholdOverrideEnabled = value; OnPropertyChanged(); } }
         public int GpuWarnThreshold { get => _gpuWarnThresholdOverride ?? PercentWarnThreshold; set { _gpuWarnThresholdOverride = Math.Clamp(value, 1, 99); OnPropertyChanged(); } }
         public int GpuCriticalThreshold { get => _gpuCriticalThresholdOverride ?? PercentCriticalThreshold; set { _gpuCriticalThresholdOverride = Math.Clamp(value, 1, 99); OnPropertyChanged(); } }
-        public bool NetworkThresholdOverrideEnabled { get => _networkThresholdOverrideEnabled; set { _networkThresholdOverrideEnabled = value; OnPropertyChanged(); } }
         public int NetworkWarnThreshold { get => _networkWarnThresholdOverride ?? PercentWarnThreshold; set { _networkWarnThresholdOverride = Math.Clamp(value, 1, 99); OnPropertyChanged(); } }
         public int NetworkCriticalThreshold { get => _networkCriticalThresholdOverride ?? PercentCriticalThreshold; set { _networkCriticalThresholdOverride = Math.Clamp(value, 1, 99); OnPropertyChanged(); } }
-        public bool DiskThresholdOverrideEnabled { get => _diskThresholdOverrideEnabled; set { _diskThresholdOverrideEnabled = value; OnPropertyChanged(); } }
         public int DiskWarnThreshold { get => _diskWarnThresholdOverride ?? PercentWarnThreshold; set { _diskWarnThresholdOverride = Math.Clamp(value, 1, 99); OnPropertyChanged(); } }
         public int DiskCriticalThreshold { get => _diskCriticalThresholdOverride ?? PercentCriticalThreshold; set { _diskCriticalThresholdOverride = Math.Clamp(value, 1, 99); OnPropertyChanged(); } }
 
@@ -287,7 +276,6 @@ namespace Kil0bitSystemMonitor.Models
         private static double ClampPad(double value) =>
             double.IsFinite(value) ? Math.Clamp(value, 0d, 400d) : 0d;
 
-        public bool TempThresholdOverrideEnabled { get => _tempThresholdOverrideEnabled; set { _tempThresholdOverrideEnabled = value; OnPropertyChanged(); } }
         public int TempWarnThresholdOverride { get => _tempWarnThresholdOverride ?? TempWarnThreshold; set { _tempWarnThresholdOverride = Math.Clamp(value, 20, 120); OnPropertyChanged(); } }
         public int TempCriticalThresholdOverride { get => _tempCriticalThresholdOverride ?? TempCriticalThreshold; set { _tempCriticalThresholdOverride = Math.Clamp(value, 20, 120); OnPropertyChanged(); } }
         public string WarningColorHex { get => _warningColorHex; set { _warningColorHex = value; OnPropertyChanged(); } }

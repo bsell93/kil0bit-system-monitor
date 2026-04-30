@@ -99,11 +99,11 @@ public static class MetricVisualPolicy
 
     public static (int Warn, int Critical) ResolvePercentThresholds(AppConfig config, string metricKey)
     {
-        if (metricKey == "cpu" && config.CpuWarnThresholdOverrideValue.HasValue && config.CpuCriticalThresholdOverrideValue.HasValue)
+        if (metricKey.StartsWith("cpu", StringComparison.Ordinal) && config.CpuWarnThresholdOverrideValue.HasValue && config.CpuCriticalThresholdOverrideValue.HasValue)
         {
             return NormalizePair(config.CpuWarnThreshold, config.CpuCriticalThreshold);
         }
-        if (metricKey == "ram" && config.RamWarnThresholdOverrideValue.HasValue && config.RamCriticalThresholdOverrideValue.HasValue)
+        if (metricKey.StartsWith("ram", StringComparison.Ordinal) && config.RamWarnThresholdOverrideValue.HasValue && config.RamCriticalThresholdOverrideValue.HasValue)
         {
             return NormalizePair(config.RamWarnThreshold, config.RamCriticalThreshold);
         }

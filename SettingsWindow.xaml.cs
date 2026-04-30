@@ -524,12 +524,6 @@ namespace Kil0bitSystemMonitor
             c.WarningColorHex = "#FFF59D00";
             c.CriticalColorHex = "#FFFF4D4F";
             MetricVisualPolicy.ApplyThresholdProfile(c, "Balanced");
-            c.CpuThresholdOverrideEnabled = false;
-            c.RamThresholdOverrideEnabled = false;
-            c.GpuThresholdOverrideEnabled = false;
-            c.NetworkThresholdOverrideEnabled = false;
-            c.DiskThresholdOverrideEnabled = false;
-            c.TempThresholdOverrideEnabled = false;
             c.CpuGroupPadLeft = c.CpuGroupPadBetween = c.CpuGroupPadRight = 0;
             c.RamGroupPadLeft = c.RamGroupPadBetween = c.RamGroupPadRight = 0;
             c.GpuGroupPadLeft = c.GpuGroupPadBetween = c.GpuGroupPadRight = 0;
@@ -609,12 +603,6 @@ namespace Kil0bitSystemMonitor
             c.WarningColorHex = "#FFF59D00";
             c.CriticalColorHex = "#FFFF4D4F";
             MetricVisualPolicy.ApplyThresholdProfile(c, "Balanced");
-            c.CpuThresholdOverrideEnabled = false;
-            c.RamThresholdOverrideEnabled = false;
-            c.GpuThresholdOverrideEnabled = false;
-            c.NetworkThresholdOverrideEnabled = false;
-            c.DiskThresholdOverrideEnabled = false;
-            c.TempThresholdOverrideEnabled = false;
             c.CpuGroupPadLeft = c.CpuGroupPadBetween = c.CpuGroupPadRight = 0;
             c.RamGroupPadLeft = c.RamGroupPadBetween = c.RamGroupPadRight = 0;
             c.GpuGroupPadLeft = c.GpuGroupPadBetween = c.GpuGroupPadRight = 0;
