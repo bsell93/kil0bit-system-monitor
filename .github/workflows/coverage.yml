@@ -38,7 +38,7 @@ jobs:
 
       - name: Generate coverage summary
         run: |
-          reportgenerator "-reports:coverage.cobertura.xml" "-targetdir:coveragereport" "-reporttypes:MarkdownSummaryGithub;Cobertura" "-assemblyfilters:+Kil0bitSystemMonitor;-Kil0bitSystemMonitor.Tests"
+          reportgenerator "-reports:coverage.cobertura.xml" "-targetdir:coveragereport" "-reporttypes:MarkdownSummaryGithub;Cobertura" "-filefilters:-*Kil0bitSystemMonitor.Tests/*;-*obj/*;-*bin/*"
           cat coveragereport/SummaryGithub.md >> "$GITHUB_STEP_SUMMARY"
 
       - name: Generate coverage badge payload
@@ -48,8 +48,10 @@ jobs:
           import xml.etree.ElementTree as ET
 
           root = ET.parse("coveragereport/Cobertura.xml").getroot()
-          line_rate = float(root.attrib.get("line-rate", "0"))
-          print(f"{line_rate * 100:.2f}")
+          lines_valid = int(float(root.attrib.get("lines-valid", "0")))
+          lines_covered = int(float(root.attrib.get("lines-covered", "0")))
+          pct = 0.0 if lines_valid == 0 else (lines_covered / lines_valid) * 100
+          print(f"{pct:.2f}")
           PY
           )
 
