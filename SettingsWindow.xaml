@@ -60,6 +60,11 @@
                         <ui:SymbolIcon Symbol="Edit" />
                     </ui:NavigationViewItem.Icon>
                 </ui:NavigationViewItem>
+                <ui:NavigationViewItem Content="Network" Tag="Network">
+                    <ui:NavigationViewItem.Icon>
+                        <ui:SymbolIcon Symbol="World" />
+                    </ui:NavigationViewItem.Icon>
+                </ui:NavigationViewItem>
                 <ui:NavigationViewItem Content="CPU" Tag="Cpu">
                     <ui:NavigationViewItem.Icon>
                         <ui:SymbolIcon Symbol="FourBars" />
@@ -73,11 +78,6 @@
                 <ui:NavigationViewItem Content="GPU" Tag="Gpu">
                     <ui:NavigationViewItem.Icon>
                         <ui:SymbolIcon Symbol="Video" />
-                    </ui:NavigationViewItem.Icon>
-                </ui:NavigationViewItem>
-                <ui:NavigationViewItem Content="Network" Tag="Network">
-                    <ui:NavigationViewItem.Icon>
-                        <ui:SymbolIcon Symbol="World" />
                     </ui:NavigationViewItem.Icon>
                 </ui:NavigationViewItem>
                 <ui:NavigationViewItem Content="Disk" Tag="Disk">
