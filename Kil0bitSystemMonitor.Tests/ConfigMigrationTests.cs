@@ -27,4 +27,5 @@ public class ConfigMigrationTests
         Assert.False(config.ShowCpuPercent);
         Assert.True(config.ShowRamPercent);
     }
+
 }

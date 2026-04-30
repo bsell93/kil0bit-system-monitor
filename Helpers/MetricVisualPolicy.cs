@@ -64,10 +64,9 @@ public static class MetricVisualPolicy
 
     public static string ResolveDisplayModeValue(AppConfig config, bool useGlobalStyle, string metricDisplayMode)
     {
+        _ = config;
         _ = useGlobalStyle;
-        return string.Equals(metricDisplayMode, "Graph", StringComparison.OrdinalIgnoreCase)
-            ? "TextGraph"
-            : metricDisplayMode;
+        return metricDisplayMode;
     }
 
     public static string ResolveGraphStyleValue(AppConfig config, bool useGlobalStyle, string metricGraphStyle)

@@ -1,5 +1,6 @@
 using Microsoft.Win32;
 using System;
+using System.Diagnostics;
 using System.IO;
 
 namespace Kil0bitSystemMonitor.Services
@@ -29,9 +30,9 @@ namespace Kil0bitSystemMonitor.Services
                     }
                 }
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                // Silently fail
+                Debug.WriteLine($"[StartupService] Failed to {(enable ? "enable" : "disable")} startup registration: {ex}");
             }
         }
 

@@ -25,7 +25,7 @@ public class MetricVisualPolicyTests
         var config = new AppConfig
         {
             CpuDisplayModeOverride = "TextGraph",
-            GlobalDisplayMode = "Graph"
+            GlobalDisplayMode = "TextGraph"
         };
 
         var resolved = MetricVisualPolicy.ResolveDisplayModeValue(config, useGlobalStyle: true, metricDisplayMode: config.CpuDisplayMode);
@@ -48,16 +48,16 @@ public class MetricVisualPolicyTests
     }
 
     [Fact]
-    public void ResolveDisplayModeValue_CoercesGlobalGraphOnlyToTextGraph()
+    public void ResolveDisplayModeValue_ReturnsMetricValueUnchanged()
     {
         var config = new AppConfig
         {
-            GlobalDisplayMode = "Graph"
+            GlobalDisplayMode = "TextGraph"
         };
 
         var resolved = MetricVisualPolicy.ResolveDisplayModeValue(config, useGlobalStyle: true, metricDisplayMode: "Text");
 
-        Assert.Equal("TextGraph", resolved);
+        Assert.Equal("Text", resolved);
     }
 
     [Fact]

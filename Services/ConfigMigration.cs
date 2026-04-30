@@ -28,6 +28,12 @@ namespace Kil0bitSystemMonitor.Services
                     config.ShowRamPercent = showRam;
                 }
 
+                string? globalDisplayMode = ReadString(root, "GlobalDisplayMode");
+                if (!string.IsNullOrWhiteSpace(globalDisplayMode))
+                {
+                    config.GlobalDisplayMode = globalDisplayMode;
+                }
+
                 MigrateStyleOverrides(root, config);
                 MigrateThresholdOverrides(root, config);
             }
@@ -254,5 +260,6 @@ namespace Kil0bitSystemMonitor.Services
 
             return null;
         }
+
     }
 }

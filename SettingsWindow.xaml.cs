@@ -81,7 +81,10 @@ namespace Kil0bitSystemMonitor
                     EnsureValidSelections();
                 });
             }
-            catch { }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[SettingsWindow] Failed to load hardware data: {ex}");
+            }
         }
 
         private void PopulateNetworkList(System.Collections.Generic.List<string> adapters)

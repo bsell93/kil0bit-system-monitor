@@ -346,9 +346,7 @@ namespace Kil0bitSystemMonitor.Models
 
         private string ResolveGlobalDisplayMode()
         {
-            return string.Equals(GlobalDisplayMode, "Graph", StringComparison.OrdinalIgnoreCase)
-                ? "TextGraph"
-                : GlobalDisplayMode;
+            return GlobalDisplayMode;
         }
 
         private void NotifyInheritedDisplayModeChanges()

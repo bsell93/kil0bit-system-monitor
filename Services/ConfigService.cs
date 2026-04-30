@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics;
 using System.IO;
 using System.Text.Json;
 using Kil0bitSystemMonitor.Models;
@@ -44,7 +45,10 @@ namespace Kil0bitSystemMonitor.Services
                     ConfigMigration.ApplyLegacyMetricFlags(json, config);
                     return config;
                 }
-                catch { }
+                catch (Exception ex)
+                {
+                    Debug.WriteLine($"[ConfigService] Failed to load config from '{_configPath}': {ex}");
+                }
             }
             return new AppConfig();
         }
@@ -59,7 +63,10 @@ namespace Kil0bitSystemMonitor.Services
                 File.WriteAllText(_configPath, json);
                 SettingsChanged?.Invoke();
             }
-            catch { }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"[ConfigService] Failed to save config to '{_configPath}': {ex}");
+            }
         }
     }
 }

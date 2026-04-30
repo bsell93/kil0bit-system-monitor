@@ -177,7 +177,10 @@ namespace Kil0bitSystemMonitor.Services
                     // Perform first update immediately
                     UpdateMetrics();
                 }
-                catch { }
+                catch (Exception ex)
+                {
+                    Debug.WriteLine($"[TelemetryService] Initialization failed: {ex}");
+                }
             });
         }
 
@@ -281,9 +284,9 @@ namespace Kil0bitSystemMonitor.Services
                 
                 StartSmiReader();
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                // Silently fail
+                Debug.WriteLine($"[TelemetryService] GPU initialization failed: {ex}");
             }
         }
 
@@ -320,7 +323,10 @@ namespace Kil0bitSystemMonitor.Services
                     } catch { }
                 }
             }
-            catch { }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"[TelemetryService] Failed to start NVIDIA SMI reader: {ex}");
+            }
         }
 
 
