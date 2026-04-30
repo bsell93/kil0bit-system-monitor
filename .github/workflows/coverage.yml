@@ -13,7 +13,10 @@ permissions:
 
 jobs:
   coverage:
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: bash
 
     steps:
       - name: Checkout
@@ -31,6 +34,7 @@ jobs:
         run: |
           dotnet tool install --global dotnet-coverage
           dotnet tool install --global dotnet-reportgenerator-globaltool
+          echo "$HOME/.dotnet/tools" >> "$GITHUB_PATH"
 
       - name: Collect coverage
         run: |
@@ -38,7 +42,7 @@ jobs:
 
       - name: Generate coverage summary
         run: |
-          reportgenerator "-reports:coverage.cobertura.xml" "-targetdir:coveragereport" "-reporttypes:MarkdownSummaryGithub;Cobertura" "-filefilters:-*Kil0bitSystemMonitor.Tests/*;-*obj/*;-*bin/*"
+          reportgenerator "-reports:coverage.cobertura.xml" "-targetdir:coveragereport" "-reporttypes:MarkdownSummaryGithub;Cobertura" "-assemblyfilters:+Kil0bitSystemMonitor;-Kil0bitSystemMonitor.Tests"
           cat coveragereport/SummaryGithub.md >> "$GITHUB_STEP_SUMMARY"
 
       - name: Generate coverage badge payload
