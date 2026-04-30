@@ -10,6 +10,7 @@
             <ResourceDictionary.MergedDictionaries>
                 <ui:ThemeResources />
                 <ui:XamlControlsResources />
+                <ResourceDictionary Source="pack://application:,,,/Kil0bitSystemMonitor;component/Views/Settings/Templates/SettingsCardTemplates.xaml" />
             </ResourceDictionary.MergedDictionaries>
 
             <helpers:BoolToVisibilityConverter x:Key="BoolToVis" />

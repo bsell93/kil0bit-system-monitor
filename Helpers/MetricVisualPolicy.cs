@@ -62,11 +62,63 @@ public static class MetricVisualPolicy
         return InlineGraphStyle.Line;
     }
 
+    public static string ResolveDisplayModeValue(AppConfig config, bool useGlobalStyle, string metricDisplayMode)
+    {
+        _ = useGlobalStyle;
+        return string.Equals(metricDisplayMode, "Graph", StringComparison.OrdinalIgnoreCase)
+            ? "TextGraph"
+            : metricDisplayMode;
+    }
+
+    public static string ResolveGraphStyleValue(AppConfig config, bool useGlobalStyle, string metricGraphStyle)
+    {
+        _ = config;
+        _ = useGlobalStyle;
+        return metricGraphStyle;
+    }
+
+    public static string ResolveAccentColorHex(AppConfig config, bool useGlobalStyle, string metricAccentColorHex)
+    {
+        _ = config;
+        _ = useGlobalStyle;
+        return metricAccentColorHex;
+    }
+
+    public static string ResolveLabelColorHex(AppConfig config, bool useGlobalStyle, string metricLabelColorHex)
+    {
+        _ = config;
+        _ = useGlobalStyle;
+        return metricLabelColorHex;
+    }
+
+    public static string ResolveGraphColorHex(AppConfig config, bool useGlobalStyle, string metricGraphColorHex)
+    {
+        _ = config;
+        _ = useGlobalStyle;
+        return metricGraphColorHex;
+    }
+
     public static (int Warn, int Critical) ResolvePercentThresholds(AppConfig config, string metricKey)
     {
-        if (metricKey == "cpu" && config.CpuThresholdOverrideEnabled)
+        if (metricKey == "cpu" && config.CpuWarnThresholdOverrideValue.HasValue && config.CpuCriticalThresholdOverrideValue.HasValue)
         {
             return NormalizePair(config.CpuWarnThreshold, config.CpuCriticalThreshold);
+        }
+        if (metricKey == "ram" && config.RamWarnThresholdOverrideValue.HasValue && config.RamCriticalThresholdOverrideValue.HasValue)
+        {
+            return NormalizePair(config.RamWarnThreshold, config.RamCriticalThreshold);
+        }
+        if (metricKey == "gpu" && config.GpuWarnThresholdOverrideValue.HasValue && config.GpuCriticalThresholdOverrideValue.HasValue)
+        {
+            return NormalizePair(config.GpuWarnThreshold, config.GpuCriticalThreshold);
+        }
+        if (metricKey.StartsWith("net.", StringComparison.Ordinal) && config.NetworkWarnThresholdOverrideValue.HasValue && config.NetworkCriticalThresholdOverrideValue.HasValue)
+        {
+            return NormalizePair(config.NetworkWarnThreshold, config.NetworkCriticalThreshold);
+        }
+        if (metricKey.StartsWith("disk.", StringComparison.Ordinal) && config.DiskWarnThresholdOverrideValue.HasValue && config.DiskCriticalThresholdOverrideValue.HasValue)
+        {
+            return NormalizePair(config.DiskWarnThreshold, config.DiskCriticalThreshold);
         }
 
         return NormalizePair(config.PercentWarnThreshold, config.PercentCriticalThreshold);
@@ -74,7 +126,7 @@ public static class MetricVisualPolicy
 
     public static (int Warn, int Critical) ResolveTempThresholds(AppConfig config)
     {
-        if (config.TempThresholdOverrideEnabled)
+        if (config.TempWarnThresholdOverrideValue.HasValue && config.TempCriticalThresholdOverrideValue.HasValue)
         {
             return NormalizePair(config.TempWarnThresholdOverride, config.TempCriticalThresholdOverride);
         }

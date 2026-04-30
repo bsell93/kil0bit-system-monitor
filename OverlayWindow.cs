@@ -284,11 +284,35 @@ namespace Kil0bitSystemMonitor
 
         private enum GraphMode { Percent, Dynamic }
         private enum ThresholdMode { None, Percent, Temperature }
+        private enum OverlayMetricBand { Network, Cpu, Ram, Gpu, Disk }
+
+        private static OverlayMetricBand ResolveOverlayMetricBand(MetricItem top, MetricItem? bottom)
+        {
+            string? k = top.GraphKey;
+            if (string.IsNullOrEmpty(k) && bottom != null)
+                k = bottom.GraphKey;
+            if (string.IsNullOrEmpty(k))
+                return OverlayMetricBand.Network;
+            if (k.StartsWith("net.", StringComparison.Ordinal))
+                return OverlayMetricBand.Network;
+            if (k.StartsWith("cpu", StringComparison.Ordinal))
+                return OverlayMetricBand.Cpu;
+            if (k.StartsWith("ram", StringComparison.Ordinal))
+                return OverlayMetricBand.Ram;
+            if (k.StartsWith("gpu", StringComparison.Ordinal))
+                return OverlayMetricBand.Gpu;
+            if (k.StartsWith("disk.", StringComparison.Ordinal))
+                return OverlayMetricBand.Disk;
+            return OverlayMetricBand.Cpu;
+        }
         // Reserve: worst-case string to measure for stable column width. Null = use live Value width.
         private class MetricItem
         {
             public string Label { get; set; } = "";
             public string Value { get; set; } = "";
+            public string ValueColorHex { get; set; } = "#FFFFFF";
+            public string LabelColorHex { get; set; } = "#00CCFF";
+            public string GraphColorHex { get; set; } = "#00CCFF";
             public string? Reserve { get; set; }
             public string GraphKey { get; set; } = "";
             public float GraphValue { get; set; }
@@ -306,9 +330,10 @@ namespace Kil0bitSystemMonitor
         {
             if (_targetAlpha == 0 && _currentAlpha == 0) return;
             var columns = PrepareMetricsData();
-            float scale = _dpiScale * (float)_config.Config.ScaleFactor;
-            bool pods = _config.Config.ShowPods;
-            string fontName = _config.Config.FontFamily;
+            var cfg = _config.Config;
+            float scale = _dpiScale * (float)cfg.ScaleFactor;
+            bool pods = cfg.ShowPods;
+            string fontName = cfg.FontFamily;
             if (string.IsNullOrEmpty(fontName) || fontName == "Default") fontName = "Segoe UI";
             System.Drawing.FontStyle style = _config.Config.IsTextBold ? System.Drawing.FontStyle.Bold : System.Drawing.FontStyle.Regular;
             Font font = GetCachedFont(fontName, 8.5f * scale, style);
@@ -319,10 +344,55 @@ namespace Kil0bitSystemMonitor
             float pad = (pods ? 4 : 0) * scale;             // pod inner padding (was 8)
 
             float[] widths = new float[columns.Count];
-            float total = 2 * scale;                         // left outer margin
-            bool globalGraphsEnabled = _config.Config.EnableInlineGraphs;
+            float outerMargin = 2f * scale;
+            bool globalGraphsEnabled = cfg.EnableInlineGraphs;
             float graphLaneWidth = 34f * scale;
             float graphLaneGap = 4f * scale;
+
+            float PadLeftPx(OverlayMetricBand b) => (float)(b switch
+            {
+                OverlayMetricBand.Network => cfg.NetworkGroupPadLeft,
+                OverlayMetricBand.Cpu => cfg.CpuGroupPadLeft,
+                OverlayMetricBand.Ram => cfg.RamGroupPadLeft,
+                OverlayMetricBand.Gpu => cfg.GpuGroupPadLeft,
+                OverlayMetricBand.Disk => cfg.DiskGroupPadLeft,
+                _ => 0d
+            }) * scale;
+
+            float PadRightPx(OverlayMetricBand b) => (float)(b switch
+            {
+                OverlayMetricBand.Network => cfg.NetworkGroupPadRight,
+                OverlayMetricBand.Cpu => cfg.CpuGroupPadRight,
+                OverlayMetricBand.Ram => cfg.RamGroupPadRight,
+                OverlayMetricBand.Gpu => cfg.GpuGroupPadRight,
+                OverlayMetricBand.Disk => cfg.DiskGroupPadRight,
+                _ => 0d
+            }) * scale;
+
+            float PadBetweenPx(OverlayMetricBand b) => (float)(b switch
+            {
+                OverlayMetricBand.Network => cfg.NetworkGroupPadBetween,
+                OverlayMetricBand.Cpu => cfg.CpuGroupPadBetween,
+                OverlayMetricBand.Ram => cfg.RamGroupPadBetween,
+                OverlayMetricBand.Gpu => cfg.GpuGroupPadBetween,
+                OverlayMetricBand.Disk => cfg.DiskGroupPadBetween,
+                _ => 0d
+            }) * scale;
+
+            float GapAfterColumn(int i)
+            {
+                if (i >= columns.Count - 1)
+                    return 0f;
+                OverlayMetricBand b0 = columns[i].Band;
+                OverlayMetricBand b1 = columns[i + 1].Band;
+                float g = podGap;
+                if (b0 == b1)
+                    g += PadBetweenPx(b0);
+                else
+                    g += PadRightPx(b0) + PadLeftPx(b1);
+                return g;
+            }
+
             for (int i = 0; i < columns.Count; i++)
             {
                 var col = columns[i];
@@ -342,10 +412,21 @@ namespace Kil0bitSystemMonitor
                 float graphWidthForColumn = colNeedsGraphLane ? graphLaneWidth : 0f;
                 float graphGapForColumn = colNeedsGraphLane ? graphLaneGap : 0f;
                 widths[i] = Math.Max(GetItemWidth(col.Top), GetItemWidth(col.Bottom)) + (pad * 2) + graphGapForColumn + graphWidthForColumn;
-
-                total += widths[i] + podGap;
             }
-            total = total - podGap + (2 * scale);           // right outer margin (was 4)
+
+            float total = outerMargin;
+            if (columns.Count > 0)
+            {
+                total += PadLeftPx(columns[0].Band);
+                for (int i = 0; i < columns.Count; i++)
+                {
+                    total += widths[i];
+                    if (i < columns.Count - 1)
+                        total += GapAfterColumn(i);
+                }
+                total += PadRightPx(columns[^1].Band);
+            }
+            total += outerMargin;
 
             int w = (int)Math.Max(20, total);
             EnsureOffscreenBuffer(w, h);
@@ -355,12 +436,10 @@ namespace Kil0bitSystemMonitor
             RenderBackground(_offscreenGraphics, w, h, scale);
             RenderHoverEffect(_offscreenGraphics, w, h, scale);
 
-            Brush vBrush = _cachedAccentBrush ?? Brushes.White;
-            Brush lBrush = _cachedLabelBrush ?? Brushes.Cyan;
             Brush pBrush = _cachedPodBrush ?? new SolidBrush(Color.FromArgb(15, 255, 255, 255));
             using var pPen = new Pen(Color.FromArgb(20, 255, 255, 255), 1);
 
-            float cx = 2 * scale;                          // start drawing from left margin (was 4)
+            float cx = outerMargin + (columns.Count > 0 ? PadLeftPx(columns[0].Band) : 0f);
             for (int i = 0; i < columns.Count; i++)
             {
                 var col = columns[i];
@@ -400,8 +479,9 @@ namespace Kil0bitSystemMonitor
                 Action<MetricItem, float> drawItem = (item, y) => {
                     if (item.DisplayMode == MetricDisplayMode.Graph) return;
                     float lw = GetCachedMeasure(item.Label, font);
-                    using var valueBrush = new SolidBrush(GetColorForSeverity(item.Severity, (_cachedAccentBrush as SolidBrush)?.Color ?? Color.White));
-                    _offscreenGraphics.DrawString(item.Label, font, lBrush, contentX, y);
+                    using var valueBrush = new SolidBrush(GetColorForSeverity(item.Severity, HexToColor(item.ValueColorHex)));
+                    using var labelBrush = new SolidBrush(HexToColor(item.LabelColorHex));
+                    _offscreenGraphics.DrawString(item.Label, font, labelBrush, contentX, y);
                     _offscreenGraphics.DrawString(item.Value, font, valueBrush, contentX + lw + gap, y);
                 };
 
@@ -415,7 +495,10 @@ namespace Kil0bitSystemMonitor
                     var item = col.Top ?? col.Bottom;
                     if (item != null) drawItem(item, (h - font.Height) / 2f);
                 }
-                cx += widths[i] + podGap;
+                if (i < columns.Count - 1)
+                    cx += widths[i] + GapAfterColumn(i);
+                else
+                    cx += widths[i] + PadRightPx(col.Band);
             }
             SetBitmap(_offscreenBitmap);
         }
@@ -469,17 +552,23 @@ namespace Kil0bitSystemMonitor
             return "DISK";
         }
 
-        private System.Collections.Generic.List<(MetricItem? Top, MetricItem? Bottom)> PrepareMetricsData()
+        private System.Collections.Generic.List<(MetricItem? Top, MetricItem? Bottom, OverlayMetricBand Band)> PrepareMetricsData()
         {
             bool compact = (_config.Config.DisplayStyle ?? "Text") == "Compact";
             var m = _viewModel.Metrics; var c = _config.Config;
-            
-            MetricItem Pct(string key, string mode, string graphStyle, string f, string cp, string v, float value) => BuildMetricItem(key, mode, graphStyle, compact ? cp : f, v, "100%", value, GraphMode.Percent, 100f, ThresholdMode.Percent, key);
-            MetricItem Temp(string key, string mode, string graphStyle, string f, string cp, string v, float value) => BuildMetricItem(key, mode, graphStyle, compact ? cp : f, v, "100°", value, GraphMode.Dynamic, 40f, ThresholdMode.Temperature, key);
-            MetricItem Net(string key, string mode, string graphStyle, string f, string cp, string v, float value) => BuildMetricItem(key, mode, graphStyle, compact ? cp : f, v, "999 KB/s", value, GraphMode.Dynamic, 512f, ThresholdMode.None, key);
-            MetricItem DiskIo(string key, string mode, string graphStyle, string f, string cp, string v, float value) => BuildMetricItem(key, mode, graphStyle, compact ? cp : f, v, "999 MB/s", value, GraphMode.Dynamic, 512f, ThresholdMode.None, key);
+
+            string DisplayMode(bool useGlobalStyle, string metricMode) => MetricVisualPolicy.ResolveDisplayModeValue(c, useGlobalStyle, metricMode);
+            string GraphStyle(bool useGlobalStyle, string metricGraphStyle) => MetricVisualPolicy.ResolveGraphStyleValue(c, useGlobalStyle, metricGraphStyle);
+            string AccentColor(bool useGlobalStyle, string metricAccentColorHex) => MetricVisualPolicy.ResolveAccentColorHex(c, useGlobalStyle, metricAccentColorHex);
+            string LabelColor(bool useGlobalStyle, string metricLabelColorHex) => MetricVisualPolicy.ResolveLabelColorHex(c, useGlobalStyle, metricLabelColorHex);
+            string GraphColor(bool useGlobalStyle, string metricGraphColorHex) => MetricVisualPolicy.ResolveGraphColorHex(c, useGlobalStyle, metricGraphColorHex);
+            MetricItem Pct(string key, bool useGlobalStyle, string mode, string graphStyle, string accentColorHex, string labelColorHex, string graphColorHex, string f, string cp, string v, float value) => BuildMetricItem(key, DisplayMode(useGlobalStyle, mode), GraphStyle(useGlobalStyle, graphStyle), AccentColor(useGlobalStyle, accentColorHex), LabelColor(useGlobalStyle, labelColorHex), GraphColor(useGlobalStyle, graphColorHex), compact ? cp : f, v, "100%", value, GraphMode.Percent, 100f, ThresholdMode.Percent, key);
+            MetricItem Temp(string key, bool useGlobalStyle, string mode, string graphStyle, string accentColorHex, string labelColorHex, string graphColorHex, string f, string cp, string v, float value) => BuildMetricItem(key, DisplayMode(useGlobalStyle, mode), GraphStyle(useGlobalStyle, graphStyle), AccentColor(useGlobalStyle, accentColorHex), LabelColor(useGlobalStyle, labelColorHex), GraphColor(useGlobalStyle, graphColorHex), compact ? cp : f, v, "100°", value, GraphMode.Dynamic, 40f, ThresholdMode.Temperature, key);
+            MetricItem Net(string key, bool useGlobalStyle, string mode, string graphStyle, string accentColorHex, string labelColorHex, string graphColorHex, string f, string cp, string v, float value) => BuildMetricItem(key, DisplayMode(useGlobalStyle, mode), GraphStyle(useGlobalStyle, graphStyle), AccentColor(useGlobalStyle, accentColorHex), LabelColor(useGlobalStyle, labelColorHex), GraphColor(useGlobalStyle, graphColorHex), compact ? cp : f, v, "999 KB/s", value, GraphMode.Dynamic, 512f, ThresholdMode.None, key);
+            MetricItem DiskIo(string key, bool useGlobalStyle, string mode, string graphStyle, string accentColorHex, string labelColorHex, string graphColorHex, string f, string cp, string v, float value) => BuildMetricItem(key, DisplayMode(useGlobalStyle, mode), GraphStyle(useGlobalStyle, graphStyle), AccentColor(useGlobalStyle, accentColorHex), LabelColor(useGlobalStyle, labelColorHex), GraphColor(useGlobalStyle, graphColorHex), compact ? cp : f, v, "999 MB/s", value, GraphMode.Dynamic, 512f, ThresholdMode.None, key);
             MetricItem Detail(
                 string key,
+                bool useGlobalStyle,
                 string mode,
                 string graphStyle,
                 string f,
@@ -487,22 +576,26 @@ namespace Kil0bitSystemMonitor
                 string v,
                 string reserve,
                 float graphValue,
-                float graphFloor) => BuildMetricItem(key, mode, graphStyle, compact ? cp : f, v, reserve, graphValue, GraphMode.Dynamic, graphFloor, ThresholdMode.None, key);
+                float graphFloor,
+                string accentColorHex,
+                string labelColorHex,
+                string graphColorHex) => BuildMetricItem(key, DisplayMode(useGlobalStyle, mode), GraphStyle(useGlobalStyle, graphStyle), AccentColor(useGlobalStyle, accentColorHex), LabelColor(useGlobalStyle, labelColorHex), GraphColor(useGlobalStyle, graphColorHex), compact ? cp : f, v, reserve, graphValue, GraphMode.Dynamic, graphFloor, ThresholdMode.None, key);
 
-            var list = new System.Collections.Generic.List<(MetricItem?, MetricItem?)>();
+            var list = new System.Collections.Generic.List<(MetricItem?, MetricItem?, OverlayMetricBand)>();
             
             if (c.ShowNetUp || c.ShowNetDown) 
-                list.Add((c.ShowNetUp ? Net("net.up", c.NetUpDisplayMode, c.NetUpGraphStyle, "UP ", "U", m.NetUpText, m.NetUpKbps) : null, c.ShowNetDown ? Net("net.down", c.NetDownDisplayMode, c.NetDownGraphStyle, "DN ", "D", m.NetDownText, m.NetDownKbps) : null));
+                list.Add((c.ShowNetUp ? Net("net.up", c.NetworkUseGlobalStyle, c.NetUpDisplayMode, c.NetUpGraphStyle, c.NetworkAccentColorHex, c.NetworkLabelColorHex, c.NetworkGraphColorHex, "UP ", "U", m.NetUpText, m.NetUpKbps) : null, c.ShowNetDown ? Net("net.down", c.NetworkUseGlobalStyle, c.NetDownDisplayMode, c.NetDownGraphStyle, c.NetworkAccentColorHex, c.NetworkLabelColorHex, c.NetworkGraphColorHex, "DN ", "D", m.NetDownText, m.NetDownKbps) : null, OverlayMetricBand.Network));
             
             var cpuRamItems = new System.Collections.Generic.List<MetricItem>();
             if (c.ShowCpuPercent)
             {
-                cpuRamItems.Add(Pct("cpu", c.CpuDisplayMode, c.CpuGraphStyle, "CPU", "C", $"{(int)m.CpuUsage}%", m.CpuUsage));
+                cpuRamItems.Add(Pct("cpu", c.CpuUseGlobalStyle, c.CpuDisplayMode, c.CpuGraphStyle, c.CpuAccentColorHex, c.CpuLabelColorHex, c.CpuGraphColorHex, "CPU", "C", $"{(int)m.CpuUsage}%", m.CpuUsage));
             }
             if (c.ShowCpuClock)
             {
                 cpuRamItems.Add(Detail(
                     "cpu.clock",
+                    c.CpuUseGlobalStyle,
                     c.CpuClockDisplayMode,
                     c.CpuClockGraphStyle,
                     "CLK",
@@ -510,16 +603,20 @@ namespace Kil0bitSystemMonitor
                     MetricTextFormatter.FormatCpuClock(m.CpuClockMhz),
                     "5.80 GHz",
                     m.CpuClockMhz,
-                    1000f));
+                    1000f,
+                    c.CpuAccentColorHex,
+                    c.CpuLabelColorHex,
+                    c.CpuGraphColorHex));
             }
             if (c.ShowRamPercent)
             {
-                cpuRamItems.Add(Pct("ram", c.RamDisplayMode, c.RamGraphStyle, "RAM", "R", $"{(int)m.RamPercent}%", m.RamPercent));
+                cpuRamItems.Add(Pct("ram", c.RamUseGlobalStyle, c.RamDisplayMode, c.RamGraphStyle, c.RamAccentColorHex, c.RamLabelColorHex, c.RamGraphColorHex, "RAM", "R", $"{(int)m.RamPercent}%", m.RamPercent));
             }
             if (c.ShowRamUsedFreeGb)
             {
                 cpuRamItems.Add(Detail(
                     "ram.usedfree",
+                    c.RamUseGlobalStyle,
                     c.RamUsedFreeDisplayMode,
                     c.RamUsedFreeGraphStyle,
                     "MEM",
@@ -527,18 +624,21 @@ namespace Kil0bitSystemMonitor
                     MetricTextFormatter.FormatRamUsedFree(m.RamUsedGb, m.RamFreeGb),
                     "64.0/64.0 GB",
                     (float)m.RamUsedGb,
-                    4f));
+                    4f,
+                    c.RamAccentColorHex,
+                    c.RamLabelColorHex,
+                    c.RamGraphColorHex));
             }
             for (int i = 0; i < cpuRamItems.Count; i += 2)
             {
                 MetricItem top = cpuRamItems[i];
                 MetricItem? bottom = i + 1 < cpuRamItems.Count ? cpuRamItems[i + 1] : null;
-                list.Add((top, bottom));
+                list.Add((top, bottom, ResolveOverlayMetricBand(top, bottom)));
             }
             
             string tempStr = m.GpuTemperature > 0 ? $"{(int)m.GpuTemperature}°" : "N/A";
             if (c.ShowGpu || c.ShowTemp) 
-                list.Add((c.ShowGpu ? Pct("gpu", c.GpuDisplayMode, c.GpuGraphStyle, "GPU", "G", $"{(int)m.GpuUsage}%", m.GpuUsage) : null, c.ShowTemp ? Temp("gpu.temp", c.TempDisplayMode, c.TempGraphStyle, "TMP", "T", tempStr, m.GpuTemperature) : null));
+                list.Add((c.ShowGpu ? Pct("gpu", c.GpuUseGlobalStyle, c.GpuDisplayMode, c.GpuGraphStyle, c.GpuAccentColorHex, c.GpuLabelColorHex, c.GpuGraphColorHex, "GPU", "G", $"{(int)m.GpuUsage}%", m.GpuUsage) : null, c.ShowTemp ? Temp("gpu.temp", c.GpuUseGlobalStyle, c.TempDisplayMode, c.TempGraphStyle, c.GpuAccentColorHex, c.GpuLabelColorHex, c.GpuGraphColorHex, "TMP", "T", tempStr, m.GpuTemperature) : null, OverlayMetricBand.Gpu));
             
             if (c.ShowDisk || c.ShowDiskSpeed || c.ShowDiskIn || c.ShowDiskOut)
             {
@@ -552,8 +652,12 @@ namespace Kil0bitSystemMonitor
                         MetricItem? diskSpaceItem = c.ShowDisk
                             ? Pct(
                                 $"disk.{graphSafeDriveId}.space",
+                                c.DiskUseGlobalStyle,
                                 c.DiskSpaceDisplayMode,
                                 c.DiskSpaceGraphStyle,
+                                c.DiskAccentColorHex,
+                                c.DiskLabelColorHex,
+                                c.DiskGraphColorHex,
                                 driveLabel,
                                 driveLabel,
                                 $"{(int)d.SpacePercent}%",
@@ -563,8 +667,12 @@ namespace Kil0bitSystemMonitor
                         MetricItem? diskSpeedItem = c.ShowDiskSpeed
                             ? Pct(
                                 $"disk.{graphSafeDriveId}.activity",
+                                c.DiskUseGlobalStyle,
                                 c.DiskActivityDisplayMode,
                                 c.DiskActivityGraphStyle,
+                                c.DiskAccentColorHex,
+                                c.DiskLabelColorHex,
+                                c.DiskGraphColorHex,
                                 "SPD",
                                 "S",
                                 $"{(int)d.ActivityPercent}%",
@@ -573,7 +681,7 @@ namespace Kil0bitSystemMonitor
 
                         if (diskSpaceItem != null || diskSpeedItem != null)
                         {
-                            list.Add((diskSpaceItem, diskSpeedItem));
+                            list.Add((diskSpaceItem, diskSpeedItem, OverlayMetricBand.Disk));
                         }
 
                         if (c.ShowDiskIn || c.ShowDiskOut)
@@ -582,8 +690,12 @@ namespace Kil0bitSystemMonitor
                                 c.ShowDiskIn
                                     ? DiskIo(
                                         $"disk.{graphSafeDriveId}.in",
+                                        c.DiskUseGlobalStyle,
                                         c.DiskActivityDisplayMode,
                                         c.DiskActivityGraphStyle,
+                                        c.DiskAccentColorHex,
+                                        c.DiskLabelColorHex,
+                                        c.DiskGraphColorHex,
                                         $"{driveLabel} IN",
                                         $"{graphSafeDriveId}I",
                                         FormatDiskSpeed(d.ReadKbps),
@@ -592,13 +704,18 @@ namespace Kil0bitSystemMonitor
                                 c.ShowDiskOut
                                     ? DiskIo(
                                         $"disk.{graphSafeDriveId}.out",
+                                        c.DiskUseGlobalStyle,
                                         c.DiskActivityDisplayMode,
                                         c.DiskActivityGraphStyle,
+                                        c.DiskAccentColorHex,
+                                        c.DiskLabelColorHex,
+                                        c.DiskGraphColorHex,
                                         $"{driveLabel} OUT",
                                         $"{graphSafeDriveId}O",
                                         FormatDiskSpeed(d.WriteKbps),
                                         d.WriteKbps)
-                                    : null
+                                    : null,
+                                OverlayMetricBand.Disk
                             ));
                         }
                     }
@@ -609,12 +726,12 @@ namespace Kil0bitSystemMonitor
             return list;
         }
 
-        private void UpdateGraphHistories(System.Collections.Generic.List<(MetricItem? Top, MetricItem? Bottom)> columns)
+        private void UpdateGraphHistories(System.Collections.Generic.List<(MetricItem? Top, MetricItem? Bottom, OverlayMetricBand Band)> columns)
         {
             int capacity = MetricVisualPolicy.ResolveHistoryPoints(_config.Config.GraphHistoryPreset, _config.Config.GraphPointCount);
             var activeKeys = new System.Collections.Generic.HashSet<string>(StringComparer.Ordinal);
 
-            foreach (var (top, bottom) in columns)
+            foreach (var (top, bottom, _) in columns)
             {
                 if (top != null)
                 {
@@ -671,7 +788,7 @@ namespace Kil0bitSystemMonitor
                 ? raw.Select(MetricGraphNormalizer.NormalizePercent).ToArray()
                 : MetricGraphNormalizer.NormalizeSeries(raw, item.GraphFloor);
 
-            var graphBaseColor = GetColorForSeverity(item.Severity, HexToColor(_config.Config.GraphColorHex ?? "#00CCFF"));
+            var graphBaseColor = GetColorForSeverity(item.Severity, HexToColor(item.GraphColorHex));
             var style = item.GraphStyle;
 
             switch (style)
@@ -773,6 +890,9 @@ namespace Kil0bitSystemMonitor
             string key,
             string mode,
             string graphStyle,
+            string valueColorHex,
+            string labelColorHex,
+            string graphColorHex,
             string label,
             string valueText,
             string reserve,
@@ -786,6 +906,9 @@ namespace Kil0bitSystemMonitor
             {
                 Label = label,
                 Value = valueText,
+                ValueColorHex = valueColorHex,
+                LabelColorHex = labelColorHex,
+                GraphColorHex = graphColorHex,
                 Reserve = reserve,
                 GraphKey = key,
                 GraphValue = value,

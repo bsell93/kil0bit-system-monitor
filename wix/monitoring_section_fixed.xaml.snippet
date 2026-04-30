@@ -10,7 +10,7 @@
                             </Border>
                             
                             <Border Background="{DynamicResource SystemControlBackgroundChromeMediumLowBrush}" BorderBrush="{DynamicResource SystemControlElevationBorderBrush}" BorderThickness="1" Margin="0,0,0,1">
-                                <UniformGrid Columns="2" Padding="8">
+                                <WrapPanel Orientation="Horizontal" Margin="8">
                                     <ui:ToggleSwitch Header="CPU Usage" IsOn="{Binding Config.ShowCpu, Mode=TwoWay}" Margin="8"/>
                                     <ui:ToggleSwitch Header="RAM Usage" IsOn="{Binding Config.ShowRam, Mode=TwoWay}" Margin="8"/>
                                     <ui:ToggleSwitch Header="GPU Usage" IsOn="{Binding Config.ShowGpu, Mode=TwoWay}" Margin="8"/>
@@ -18,7 +18,7 @@
                                     <ui:ToggleSwitch Header="Network Upload" IsOn="{Binding Config.ShowNetUp, Mode=TwoWay}" Margin="8"/>
                                     <ui:ToggleSwitch Header="Network Download" IsOn="{Binding Config.ShowNetDown, Mode=TwoWay}" Margin="8"/>
                                     <ui:ToggleSwitch Header="Disk Activity" IsOn="{Binding Config.ShowDisk, Mode=TwoWay}" Margin="8"/>
-                                </UniformGrid>
+                                </WrapPanel>
                             </Border>
 
                             <Border Background="{DynamicResource SystemControlBackgroundChromeMediumLowBrush}" BorderBrush="{DynamicResource SystemControlElevationBorderBrush}" BorderThickness="1" CornerRadius="0,0,8,8">

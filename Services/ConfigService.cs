@@ -40,7 +40,9 @@ namespace Kil0bitSystemMonitor.Services
                 try
                 {
                     string json = File.ReadAllText(_configPath);
-                    return JsonSerializer.Deserialize<AppConfig>(json) ?? new AppConfig();
+                    var config = JsonSerializer.Deserialize<AppConfig>(json) ?? new AppConfig();
+                    ConfigMigration.ApplyLegacyMetricFlags(json, config);
+                    return config;
                 }
                 catch { }
             }

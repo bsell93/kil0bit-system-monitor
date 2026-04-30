@@ -56,6 +56,12 @@ namespace Kil0bitSystemMonitor
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($"SettingsWindow Init Error: {ex.Message}");
+                System.Windows.MessageBox.Show(
+                    $"Failed to load settings UI.\n\n{ex.Message}",
+                    "Settings Error",
+                    System.Windows.MessageBoxButton.OK,
+                    System.Windows.MessageBoxImage.Error);
+                Close();
             }
         }
 
@@ -259,6 +265,229 @@ namespace Kil0bitSystemMonitor
             }
         }
 
+        internal void ForwardThemeSelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            ThemeCombo_SelectionChanged(sender, e);
+        }
+
+        internal void ForwardThresholdProfileSelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            ThresholdProfile_SelectionChanged(sender, e);
+        }
+
+        internal void ForwardColorButtonClick(object sender, RoutedEventArgs e)
+        {
+            ColorButton_Click(sender, e);
+        }
+
+        private void ResetMetricOverride_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is not System.Windows.Controls.Button button || button.Tag is not string tag)
+            {
+                return;
+            }
+
+            var c = _config.Config;
+            switch (tag)
+            {
+                case "CpuAccent":
+                    c.CpuAccentColorHexOverride = null;
+                    break;
+                case "CpuLabel":
+                    c.CpuLabelColorHexOverride = null;
+                    break;
+                case "CpuGraph":
+                    c.CpuGraphColorHexOverride = null;
+                    break;
+                case "RamAccent":
+                    c.RamAccentColorHexOverride = null;
+                    break;
+                case "RamLabel":
+                    c.RamLabelColorHexOverride = null;
+                    break;
+                case "RamGraph":
+                    c.RamGraphColorHexOverride = null;
+                    break;
+                case "GpuAccent":
+                    c.GpuAccentColorHexOverride = null;
+                    break;
+                case "GpuLabel":
+                    c.GpuLabelColorHexOverride = null;
+                    break;
+                case "GpuGraph":
+                    c.GpuGraphColorHexOverride = null;
+                    break;
+                case "NetworkAccent":
+                    c.NetworkAccentColorHexOverride = null;
+                    break;
+                case "NetworkLabel":
+                    c.NetworkLabelColorHexOverride = null;
+                    break;
+                case "NetworkGraph":
+                    c.NetworkGraphColorHexOverride = null;
+                    break;
+                case "DiskAccent":
+                    c.DiskAccentColorHexOverride = null;
+                    break;
+                case "DiskLabel":
+                    c.DiskLabelColorHexOverride = null;
+                    break;
+                case "DiskGraph":
+                    c.DiskGraphColorHexOverride = null;
+                    break;
+                case "CpuDisplayMode":
+                    c.CpuDisplayModeOverride = null;
+                    break;
+                case "CpuGraphStyle":
+                    c.CpuGraphStyleOverride = null;
+                    break;
+                case "CpuClockDisplayMode":
+                    c.CpuClockDisplayModeOverride = null;
+                    break;
+                case "CpuClockGraphStyle":
+                    c.CpuClockGraphStyleOverride = null;
+                    break;
+                case "RamDisplayMode":
+                    c.RamDisplayModeOverride = null;
+                    break;
+                case "RamGraphStyle":
+                    c.RamGraphStyleOverride = null;
+                    break;
+                case "RamUsedFreeDisplayMode":
+                    c.RamUsedFreeDisplayModeOverride = null;
+                    break;
+                case "RamUsedFreeGraphStyle":
+                    c.RamUsedFreeGraphStyleOverride = null;
+                    break;
+                case "GpuDisplayMode":
+                    c.GpuDisplayModeOverride = null;
+                    break;
+                case "GpuGraphStyle":
+                    c.GpuGraphStyleOverride = null;
+                    break;
+                case "TempDisplayMode":
+                    c.TempDisplayModeOverride = null;
+                    break;
+                case "TempGraphStyle":
+                    c.TempGraphStyleOverride = null;
+                    break;
+                case "NetUpDisplayMode":
+                    c.NetUpDisplayModeOverride = null;
+                    break;
+                case "NetUpGraphStyle":
+                    c.NetUpGraphStyleOverride = null;
+                    break;
+                case "NetDownDisplayMode":
+                    c.NetDownDisplayModeOverride = null;
+                    break;
+                case "NetDownGraphStyle":
+                    c.NetDownGraphStyleOverride = null;
+                    break;
+                case "DiskSpaceDisplayMode":
+                    c.DiskSpaceDisplayModeOverride = null;
+                    break;
+                case "DiskSpaceGraphStyle":
+                    c.DiskSpaceGraphStyleOverride = null;
+                    break;
+                case "DiskActivityDisplayMode":
+                    c.DiskActivityDisplayModeOverride = null;
+                    break;
+                case "DiskActivityGraphStyle":
+                    c.DiskActivityGraphStyleOverride = null;
+                    break;
+                case "CpuWarnThreshold":
+                    c.CpuWarnThresholdOverrideValue = null;
+                    break;
+                case "CpuCriticalThreshold":
+                    c.CpuCriticalThresholdOverrideValue = null;
+                    break;
+                case "RamWarnThreshold":
+                    c.RamWarnThresholdOverrideValue = null;
+                    break;
+                case "RamCriticalThreshold":
+                    c.RamCriticalThresholdOverrideValue = null;
+                    break;
+                case "GpuWarnThreshold":
+                    c.GpuWarnThresholdOverrideValue = null;
+                    break;
+                case "GpuCriticalThreshold":
+                    c.GpuCriticalThresholdOverrideValue = null;
+                    break;
+                case "TempWarnThreshold":
+                    c.TempWarnThresholdOverrideValue = null;
+                    break;
+                case "TempCriticalThreshold":
+                    c.TempCriticalThresholdOverrideValue = null;
+                    break;
+                case "NetworkWarnThreshold":
+                    c.NetworkWarnThresholdOverrideValue = null;
+                    break;
+                case "NetworkCriticalThreshold":
+                    c.NetworkCriticalThresholdOverrideValue = null;
+                    break;
+                case "DiskWarnThreshold":
+                    c.DiskWarnThresholdOverrideValue = null;
+                    break;
+                case "DiskCriticalThreshold":
+                    c.DiskCriticalThresholdOverrideValue = null;
+                    break;
+            }
+        }
+
+        private static void ClearMetricOverrides(Models.AppConfig c)
+        {
+            c.CpuDisplayModeOverride = null;
+            c.CpuClockDisplayModeOverride = null;
+            c.RamDisplayModeOverride = null;
+            c.RamUsedFreeDisplayModeOverride = null;
+            c.GpuDisplayModeOverride = null;
+            c.TempDisplayModeOverride = null;
+            c.NetUpDisplayModeOverride = null;
+            c.NetDownDisplayModeOverride = null;
+            c.DiskSpaceDisplayModeOverride = null;
+            c.DiskActivityDisplayModeOverride = null;
+
+            c.CpuGraphStyleOverride = null;
+            c.CpuClockGraphStyleOverride = null;
+            c.RamGraphStyleOverride = null;
+            c.RamUsedFreeGraphStyleOverride = null;
+            c.GpuGraphStyleOverride = null;
+            c.TempGraphStyleOverride = null;
+            c.NetUpGraphStyleOverride = null;
+            c.NetDownGraphStyleOverride = null;
+            c.DiskSpaceGraphStyleOverride = null;
+            c.DiskActivityGraphStyleOverride = null;
+
+            c.CpuAccentColorHexOverride = null;
+            c.CpuLabelColorHexOverride = null;
+            c.CpuGraphColorHexOverride = null;
+            c.RamAccentColorHexOverride = null;
+            c.RamLabelColorHexOverride = null;
+            c.RamGraphColorHexOverride = null;
+            c.GpuAccentColorHexOverride = null;
+            c.GpuLabelColorHexOverride = null;
+            c.GpuGraphColorHexOverride = null;
+            c.NetworkAccentColorHexOverride = null;
+            c.NetworkLabelColorHexOverride = null;
+            c.NetworkGraphColorHexOverride = null;
+            c.DiskAccentColorHexOverride = null;
+            c.DiskLabelColorHexOverride = null;
+            c.DiskGraphColorHexOverride = null;
+
+            c.CpuWarnThresholdOverrideValue = null;
+            c.CpuCriticalThresholdOverrideValue = null;
+            c.RamWarnThresholdOverrideValue = null;
+            c.RamCriticalThresholdOverrideValue = null;
+            c.GpuWarnThresholdOverrideValue = null;
+            c.GpuCriticalThresholdOverrideValue = null;
+            c.NetworkWarnThresholdOverrideValue = null;
+            c.NetworkCriticalThresholdOverrideValue = null;
+            c.DiskWarnThresholdOverrideValue = null;
+            c.DiskCriticalThresholdOverrideValue = null;
+            c.TempWarnThresholdOverrideValue = null;
+            c.TempCriticalThresholdOverrideValue = null;
+        }
+
 
 
         private void ResetToDefaults_Click(object sender, RoutedEventArgs e)
@@ -280,32 +509,29 @@ namespace Kil0bitSystemMonitor
             c.GraphColorHex = "#00CCFF";
             c.GraphHistoryPreset = "Medium";
             c.InlineGraphStyle = "Line";
-            c.CpuGraphStyle = "Line";
-            c.CpuClockGraphStyle = "Line";
-            c.RamGraphStyle = "Line";
-            c.RamUsedFreeGraphStyle = "Line";
-            c.GpuGraphStyle = "Line";
-            c.TempGraphStyle = "Line";
-            c.NetUpGraphStyle = "Line";
-            c.NetDownGraphStyle = "Line";
-            c.DiskSpaceGraphStyle = "Line";
-            c.DiskActivityGraphStyle = "Line";
-            c.CpuDisplayMode = "TextGraph";
-            c.CpuClockDisplayMode = "TextGraph";
-            c.RamDisplayMode = "TextGraph";
-            c.RamUsedFreeDisplayMode = "TextGraph";
-            c.GpuDisplayMode = "TextGraph";
-            c.TempDisplayMode = "TextGraph";
-            c.NetUpDisplayMode = "TextGraph";
-            c.NetDownDisplayMode = "TextGraph";
-            c.DiskSpaceDisplayMode = "TextGraph";
-            c.DiskActivityDisplayMode = "TextGraph";
+            c.GlobalDisplayMode = "TextGraph";
+            c.GlobalGraphStyle = "Line";
+            c.CpuUseGlobalStyle = true;
+            c.RamUseGlobalStyle = true;
+            c.GpuUseGlobalStyle = true;
+            c.NetworkUseGlobalStyle = true;
+            c.DiskUseGlobalStyle = true;
+            ClearMetricOverrides(c);
             c.EnableThresholdColors = true;
             c.WarningColorHex = "#FFF59D00";
             c.CriticalColorHex = "#FFFF4D4F";
             MetricVisualPolicy.ApplyThresholdProfile(c, "Balanced");
             c.CpuThresholdOverrideEnabled = false;
+            c.RamThresholdOverrideEnabled = false;
+            c.GpuThresholdOverrideEnabled = false;
+            c.NetworkThresholdOverrideEnabled = false;
+            c.DiskThresholdOverrideEnabled = false;
             c.TempThresholdOverrideEnabled = false;
+            c.CpuGroupPadLeft = c.CpuGroupPadBetween = c.CpuGroupPadRight = 0;
+            c.RamGroupPadLeft = c.RamGroupPadBetween = c.RamGroupPadRight = 0;
+            c.GpuGroupPadLeft = c.GpuGroupPadBetween = c.GpuGroupPadRight = 0;
+            c.NetworkGroupPadLeft = c.NetworkGroupPadBetween = c.NetworkGroupPadRight = 0;
+            c.DiskGroupPadLeft = c.DiskGroupPadBetween = c.DiskGroupPadRight = 0;
             _config.SaveConfig();
         }
 
@@ -368,32 +594,29 @@ namespace Kil0bitSystemMonitor
             c.GraphColorHex = "#00CCFF";
             c.GraphHistoryPreset = "Medium";
             c.InlineGraphStyle = "Line";
-            c.CpuGraphStyle = "Line";
-            c.CpuClockGraphStyle = "Line";
-            c.RamGraphStyle = "Line";
-            c.RamUsedFreeGraphStyle = "Line";
-            c.GpuGraphStyle = "Line";
-            c.TempGraphStyle = "Line";
-            c.NetUpGraphStyle = "Line";
-            c.NetDownGraphStyle = "Line";
-            c.DiskSpaceGraphStyle = "Line";
-            c.DiskActivityGraphStyle = "Line";
-            c.CpuDisplayMode = "TextGraph";
-            c.CpuClockDisplayMode = "TextGraph";
-            c.RamDisplayMode = "TextGraph";
-            c.RamUsedFreeDisplayMode = "TextGraph";
-            c.GpuDisplayMode = "TextGraph";
-            c.TempDisplayMode = "TextGraph";
-            c.NetUpDisplayMode = "TextGraph";
-            c.NetDownDisplayMode = "TextGraph";
-            c.DiskSpaceDisplayMode = "TextGraph";
-            c.DiskActivityDisplayMode = "TextGraph";
+            c.GlobalDisplayMode = "TextGraph";
+            c.GlobalGraphStyle = "Line";
+            c.CpuUseGlobalStyle = true;
+            c.RamUseGlobalStyle = true;
+            c.GpuUseGlobalStyle = true;
+            c.NetworkUseGlobalStyle = true;
+            c.DiskUseGlobalStyle = true;
+            ClearMetricOverrides(c);
             c.EnableThresholdColors = true;
             c.WarningColorHex = "#FFF59D00";
             c.CriticalColorHex = "#FFFF4D4F";
             MetricVisualPolicy.ApplyThresholdProfile(c, "Balanced");
             c.CpuThresholdOverrideEnabled = false;
+            c.RamThresholdOverrideEnabled = false;
+            c.GpuThresholdOverrideEnabled = false;
+            c.NetworkThresholdOverrideEnabled = false;
+            c.DiskThresholdOverrideEnabled = false;
             c.TempThresholdOverrideEnabled = false;
+            c.CpuGroupPadLeft = c.CpuGroupPadBetween = c.CpuGroupPadRight = 0;
+            c.RamGroupPadLeft = c.RamGroupPadBetween = c.RamGroupPadRight = 0;
+            c.GpuGroupPadLeft = c.GpuGroupPadBetween = c.GpuGroupPadRight = 0;
+            c.NetworkGroupPadLeft = c.NetworkGroupPadBetween = c.NetworkGroupPadRight = 0;
+            c.DiskGroupPadLeft = c.DiskGroupPadBetween = c.DiskGroupPadRight = 0;
             
             StartupService.SetStartup(false);
             _config.SaveConfig();
@@ -415,6 +638,21 @@ namespace Kil0bitSystemMonitor
                         "Critical" => _config.Config.CriticalColorHex,
                         "Background" => _config.Config.BackgroundColorHex,
                         "Pod" => _config.Config.PodColorHex,
+                        "CpuAccent" => _config.Config.CpuAccentColorHex,
+                        "CpuLabel" => _config.Config.CpuLabelColorHex,
+                        "CpuGraph" => _config.Config.CpuGraphColorHex,
+                        "RamAccent" => _config.Config.RamAccentColorHex,
+                        "RamLabel" => _config.Config.RamLabelColorHex,
+                        "RamGraph" => _config.Config.RamGraphColorHex,
+                        "GpuAccent" => _config.Config.GpuAccentColorHex,
+                        "GpuLabel" => _config.Config.GpuLabelColorHex,
+                        "GpuGraph" => _config.Config.GpuGraphColorHex,
+                        "NetworkAccent" => _config.Config.NetworkAccentColorHex,
+                        "NetworkLabel" => _config.Config.NetworkLabelColorHex,
+                        "NetworkGraph" => _config.Config.NetworkGraphColorHex,
+                        "DiskAccent" => _config.Config.DiskAccentColorHex,
+                        "DiskLabel" => _config.Config.DiskLabelColorHex,
+                        "DiskGraph" => _config.Config.DiskGraphColorHex,
                         _ => "#FFFFFF"
                     };
                     
@@ -443,6 +681,21 @@ namespace Kil0bitSystemMonitor
                             case "Critical": _config.Config.CriticalColorHex = hex; break;
                             case "Background": _config.Config.BackgroundColorHex = hex; break;
                             case "Pod": _config.Config.PodColorHex = hex; break;
+                            case "CpuAccent": _config.Config.CpuAccentColorHex = hex; break;
+                            case "CpuLabel": _config.Config.CpuLabelColorHex = hex; break;
+                            case "CpuGraph": _config.Config.CpuGraphColorHex = hex; break;
+                            case "RamAccent": _config.Config.RamAccentColorHex = hex; break;
+                            case "RamLabel": _config.Config.RamLabelColorHex = hex; break;
+                            case "RamGraph": _config.Config.RamGraphColorHex = hex; break;
+                            case "GpuAccent": _config.Config.GpuAccentColorHex = hex; break;
+                            case "GpuLabel": _config.Config.GpuLabelColorHex = hex; break;
+                            case "GpuGraph": _config.Config.GpuGraphColorHex = hex; break;
+                            case "NetworkAccent": _config.Config.NetworkAccentColorHex = hex; break;
+                            case "NetworkLabel": _config.Config.NetworkLabelColorHex = hex; break;
+                            case "NetworkGraph": _config.Config.NetworkGraphColorHex = hex; break;
+                            case "DiskAccent": _config.Config.DiskAccentColorHex = hex; break;
+                            case "DiskLabel": _config.Config.DiskLabelColorHex = hex; break;
+                            case "DiskGraph": _config.Config.DiskGraphColorHex = hex; break;
                         }
                     }
                 }
@@ -481,16 +734,24 @@ namespace Kil0bitSystemMonitor
             {
                 HomeSection.Visibility = Visibility.Collapsed;
                 GeneralSection.Visibility = Visibility.Collapsed;
-                MonitoringSection.Visibility = Visibility.Collapsed;
-                AppearanceSection.Visibility = Visibility.Collapsed;
+                GlobalStyleSection.Visibility = Visibility.Collapsed;
+                CpuSection.Visibility = Visibility.Collapsed;
+                RamSection.Visibility = Visibility.Collapsed;
+                GpuSection.Visibility = Visibility.Collapsed;
+                NetworkSection.Visibility = Visibility.Collapsed;
+                DiskSection.Visibility = Visibility.Collapsed;
                 AboutSection.Visibility = Visibility.Collapsed;
 
                 switch (sectionName)
                 {
                     case "Home": HomeSection.Visibility = Visibility.Visible; break;
                     case "General": GeneralSection.Visibility = Visibility.Visible; break;
-                    case "Monitoring": MonitoringSection.Visibility = Visibility.Visible; break;
-                    case "Appearance": AppearanceSection.Visibility = Visibility.Visible; break;
+                    case "GlobalStyle": GlobalStyleSection.Visibility = Visibility.Visible; break;
+                    case "Cpu": CpuSection.Visibility = Visibility.Visible; break;
+                    case "Ram": RamSection.Visibility = Visibility.Visible; break;
+                    case "Gpu": GpuSection.Visibility = Visibility.Visible; break;
+                    case "Network": NetworkSection.Visibility = Visibility.Visible; break;
+                    case "Disk": DiskSection.Visibility = Visibility.Visible; break;
                     case "About": AboutSection.Visibility = Visibility.Visible; break;
                 }
 

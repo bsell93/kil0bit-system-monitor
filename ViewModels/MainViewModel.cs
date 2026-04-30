@@ -1,6 +1,7 @@
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using Kil0bitSystemMonitor.Models;
+using Kil0bitSystemMonitor.ViewModels.Settings;
 
 namespace Kil0bitSystemMonitor.ViewModels
 {
@@ -28,6 +29,9 @@ namespace Kil0bitSystemMonitor.ViewModels
             get => _config;
             set { _config = value; OnPropertyChanged(); }
         }
+
+        private SettingsWindowViewModel? _settings;
+        public SettingsWindowViewModel Settings => _settings ??= new SettingsWindowViewModel(this);
 
         public event PropertyChangedEventHandler? PropertyChanged;
         protected void OnPropertyChanged([CallerMemberName] string? name = null)
