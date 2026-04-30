@@ -154,6 +154,7 @@ _TeamCity*
 coverage*.json
 coverage*.xml
 coverage*.info
+!badges/coverage-badge.json
 
 # Visual Studio code coverage results
 *.coverage

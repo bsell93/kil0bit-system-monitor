@@ -13,7 +13,7 @@ Built with C#, WPF, and raw Win32 power
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg?style=flat-square)](LICENSE)
 [![.NET 8](https://img.shields.io/badge/.NET-8.0-blueviolet?style=flat-square)](https://dotnet.microsoft.com/en-us/download/dotnet/8.0)
 [![Tests](https://github.com/bsell93/kil0bit-system-monitor/actions/workflows/tests.yml/badge.svg)](https://github.com/bsell93/kil0bit-system-monitor/actions/workflows/tests.yml)
-[![Coverage](https://github.com/bsell93/kil0bit-system-monitor/actions/workflows/coverage.yml/badge.svg)](https://github.com/bsell93/kil0bit-system-monitor/actions/workflows/coverage.yml)
+[![Coverage](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/bsell93/kil0bit-system-monitor/main/badges/coverage-badge.json)](https://github.com/bsell93/kil0bit-system-monitor/actions/workflows/coverage.yml)
 
 </div>
 
