@@ -268,13 +268,6 @@ namespace Kil0bitSystemMonitor
                 int oh = (int)(32 * _dpiScale * (float)_config.Config.ScaleFactor);
                 int cy = tb.Top + (h - oh) / 2;
                 int cx = (int)_config.Config.X;
-                IntPtr monitor = MonitorFromWindow(_hWnd, 2);
-                MONITORINFO mi = new MONITORINFO { cbSize = (uint)Marshal.SizeOf(typeof(MONITORINFO)) };
-                if (monitor != IntPtr.Zero && GetMonitorInfo(monitor, ref mi) && Win32Helper.GetWindowRect(_hWnd, out Win32Helper.RECT wr))
-                {
-                    int windowWidth = Math.Max(1, wr.Right - wr.Left);
-                    cx = mi.rcMonitor.Left + ((mi.rcMonitor.Right - mi.rcMonitor.Left - windowWidth) / 2);
-                }
 
                 SetWindowPos(_hWnd, IntPtr.Zero, cx, cy, 0, 0, 0x0001 | 0x0004 | 0x0010);
                 _config.Config.X = cx;
